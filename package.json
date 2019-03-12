@@ -1,0 +1,100 @@
+{
+    "name": "@onlylys/vscode-configuration-handler",
+    "description": "Utility class to make handling configurations in VS Code extensions easier. This is primarily a shared dependency for the extensions I am working on.",
+    "version": "0.0.1",
+    "publisher": "OnlyLys",
+    "author": {
+        "name": "L.Y. Sim",
+        "email": "OnlyLys@protonmail.com"
+    },
+    "license": "MIT",
+    "main": "./out/index.js",
+    "types": "./out/types/index.d.ts",
+    "files": [
+        "./out/*.js",
+        "./out/*.js.map",
+        "./out/types"
+    ],
+    "activationEvents": [],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/npm/cli.git"
+    },
+    "contributes": {
+        "configuration": {
+            "type": "object",
+            "title": "VSCode Configuration Handler Test Configurations",
+            "properties": {
+                "@onlylys/vscode-configuration-handler.config": {
+                    "$comment": "This test configuration was inspired by `Leaper.detectedPairs`.",
+                    "type": "array",
+                    "default": [
+                        "()",
+                        "[]",
+                        "{}",
+                        "<>",
+                        "``",
+                        "''",
+                        "\"\""
+                    ],
+                    "markdownDescription": "DO NOT USE. For tests only!"
+                },
+                "@onlylys/vscode-configuration-handler.deprConfig": {
+                    "$comment": "This test configuration was inspired by `Leaper.additionalTriggerPairs`. This configuration simulates a deprecated configuration.",
+                    "type": "array",
+                    "default": [
+                        {
+                            "open": "(",
+                            "close": ")"
+                        },
+                        {
+                            "open": "[",
+                            "close": "]"
+                        },
+                        {
+                            "open": "{",
+                            "close": "}"
+                        },
+                        {
+                            "open": "<",
+                            "close": ">"
+                        },
+                        {
+                            "open": "`",
+                            "close": "`"
+                        },
+                        {
+                            "open": "'",
+                            "close": "'"
+                        },
+                        {
+                            "open": "\"",
+                            "close": "\""
+                        }
+                    ],
+                    "markdownDescription": "DO NOT USE. For tests only!"
+                }
+            }
+        }
+    },
+    "scripts": {
+        "build": "node ./scripts/clean-typescript-output.js && tsc --build",
+        "watch": "tsc --watch",
+        "prepare": "node ./node_modules/vscode/bin/install",
+        "prepack": "npm run build",
+        "pretest": "npm run build && node ./scripts/create-test-environment.js",
+        "test": "node ./scripts/launch-tests-shell.js",
+        "posttest": "node ./scripts/delete-test-environment.js"
+    },
+    "engines": {
+        "vscode": "^1.28.0"
+    },
+    "devDependencies": {
+        "typescript": "^3.3.1",
+        "vscode": "^1.1.28",
+        "tslint": "^5.12.1",
+        "@types/node": "^10.12.21",
+        "@types/mocha": "^2.2.42",
+        "shelljs": "^0.8.3"
+    }
+}

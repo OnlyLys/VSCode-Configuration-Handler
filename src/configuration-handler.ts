@@ -1,4 +1,4 @@
-import { ConfigurationTarget, workspace, window, TextEditor } from 'vscode';
+import { ConfigurationTarget, workspace } from 'vscode';
 import { ConfigurationBadDefaultError, ConfigurationNotRecognizedError, ConfigurationNameEmptyError } from './errors';
 import { Values, ValuesUnsafe } from './values';
 
@@ -21,13 +21,13 @@ export class ConfigurationHandler<T> {
      * 3. **Workspace** (value in the `.vscode/settings.json` file in a single workspace environment
      *    or the workspace global value in a multi-root workspace. For more info see: 
      *    https://code.visualstudio.com/docs/editor/multi-root-workspaces)
-     * 4. **Workspace Folder** (value in the `.vscode/settings.json` file for a workspace within a 
-     *    multi-root workspace, however not used in a single workspace environment)
+     *
+     * **Note that as of VS Code 1.32, workspace folder scoped values are not yet supported for 
+     * third party extensions so there's no support for it here.** 
      * 
      * Furthermore, the `effectiveValue` is also returned. This value is the value that is in effect
      * after all shadowing rules are considered. The heirarchy for shadowing is as follows:
      * 
-     * * `workspaceFolderValue`
      * * `workspaceValue`
      * * `globalValue`
      * * `defaultValue`
@@ -50,17 +50,14 @@ export class ConfigurationHandler<T> {
         const {
             defaultValue,
             globalValue,
-            workspaceValue,
-            workspaceFolderValue
+            workspaceValue
         } = this.getUnsafe();
         if (defaultValue === undefined) {
             throw new ConfigurationBadDefaultError(this.args.name);
         }
         // Since the default value is defined, we can confidently calculate the effective value 
         const effectiveValue = (() => { 
-            if (workspaceFolderValue !== undefined) {
-                return workspaceFolderValue;
-            } else if (workspaceValue !== undefined) {
+            if (workspaceValue !== undefined) {
                 return workspaceValue;
             } else if (globalValue !== undefined) {
                 return globalValue;
@@ -72,7 +69,6 @@ export class ConfigurationHandler<T> {
             defaultValue,
             globalValue,
             workspaceValue,
-            workspaceFolderValue,
             effectiveValue
         };
     }
@@ -101,15 +97,13 @@ export class ConfigurationHandler<T> {
         }
         // Typecheck the values
         const check = (value?: T) => this.args.typeCheck(value) ? value : undefined;
-        const defaultValue         = check(inspect.defaultValue);
-        const globalValue          = check(inspect.globalValue);
-        const workspaceValue       = check(inspect.workspaceValue);
-        const workspaceFolderValue = check(inspect.workspaceFolderValue);
+        const defaultValue   = check(inspect.defaultValue);
+        const globalValue    = check(inspect.globalValue);
+        const workspaceValue = check(inspect.workspaceValue);
         return {
             defaultValue,
             globalValue,
             workspaceValue,
-            workspaceFolderValue
         };
     }
 
@@ -140,22 +134,6 @@ export class ConfigurationHandler<T> {
     public async setWorkspaceValue(value: T | undefined): Promise<void> {
         const section = workspace.getConfiguration(this.sectionName);
         return section.update(this.childName, value, ConfigurationTarget.Workspace);
-    }
-
-    /**
-     * Set the value of the configuration in the current workspace within a multi-root workspace 
-     * environment.
-     * 
-     * To disable it, set to `undefined`.
-     * 
-     * @return A promise that resolves when the update is complete.
-     * 
-     * @throws If there is no workspace currently opened OR if we are not in a multi-root workspace
-     *         environment, VS Code will throw an error of unspecified type.
-     */
-    public async setWorkspaceFolderValue(value: T | undefined): Promise<void> {
-        const section = workspace.getConfiguration(this.sectionName, (window.activeTextEditor as TextEditor).document.uri);
-        return section.update(this.childName, value, ConfigurationTarget.WorkspaceFolder);
     }
 
     /**

@@ -27,25 +27,24 @@ export class ConfigurationHandlerCompat<T, D> extends ConfigurationHandler<T> {
     private readonly handlerToDepr: ConfigurationHandler<D>;
 
     /** 
-     * Get the configuration value in the following scopes:
+     * Get the values in the following scopes for both the new and deprecated configurations:
      * 
      * 1. **Default** (default value in extension manifest; will throw if typecheck fails)
      * 2. **Global** (value in the user's global 'User Settings' file)
      * 3. **Workspace** (value in the `.vscode/settings.json` file in a single workspace environment
      *    or the workspace global value in a multi-root workspace. For more info see: 
      *    https://code.visualstudio.com/docs/editor/multi-root-workspaces)
-     * 4. **Workspace Folder** (value in the `.vscode/settings.json` file for a workspace within a 
-     *    multi-root workspace, however not used in a single workspace environment)
      * 
-     * For both the new configuration and the deprecated configuration. Values for the deprecated 
-     * configuration are prefixed with `depr`. For instance, its global value is `deprGlobalValue`.
+     * **Note that as of VS Code 1.32, workspace folder scoped values are not yet supported for 
+     * third party extensions so there's no support for it here.** 
+     * 
+     * Values for the deprecated configuration are prefixed with `depr`. For instance, the global
+     * value of the deprecated configuration is `deprGlobalValue`.
      * 
      * Furthermore, the `effectiveValue` is also returned. This value is calculated by merging the 
      * views of the new and deprecated configurations then applying shadowing rules. More specifically, 
      * the heirarchy for shadowing is as follows:
      * 
-     * * `workspaceFolderValue`
-     * * `deprWorkspaceFolderValue`
      * * `workspaceValue`
      * * `deprWorkspaceValue`
      * * `globalValue`
@@ -73,11 +72,9 @@ export class ConfigurationHandlerCompat<T, D> extends ConfigurationHandler<T> {
             defaultValue,
             globalValue,
             workspaceValue,
-            workspaceFolderValue,
             deprDefaultValue,
             deprGlobalValue,
             deprWorkspaceValue,
-            deprWorkspaceFolderValue
         } = this.getUnsafe();
         if (defaultValue === undefined) {
             throw new ConfigurationBadDefaultError(this.args2.name);
@@ -85,11 +82,7 @@ export class ConfigurationHandlerCompat<T, D> extends ConfigurationHandler<T> {
         /* Since the default value of the new configuration is defined, we can confidently calculate
         the effective value. */
         const effectiveValue = (() => {
-            if (workspaceFolderValue !== undefined) {
-                return workspaceFolderValue;
-            } else if (deprWorkspaceFolderValue !== undefined) {
-                return this.args2.normalize(deprWorkspaceFolderValue);
-            } else if (workspaceValue !== undefined) {
+            if (workspaceValue !== undefined) {
                 return workspaceValue;
             } else if (deprWorkspaceValue !== undefined) {
                 return this.args2.normalize(deprWorkspaceValue);
@@ -105,11 +98,9 @@ export class ConfigurationHandlerCompat<T, D> extends ConfigurationHandler<T> {
             defaultValue,
             globalValue,
             workspaceValue,
-            workspaceFolderValue,
             deprDefaultValue,
             deprGlobalValue,
             deprWorkspaceValue,
-            deprWorkspaceFolderValue,
             effectiveValue
         };
     }
@@ -133,24 +124,20 @@ export class ConfigurationHandlerCompat<T, D> extends ConfigurationHandler<T> {
             defaultValue,
             globalValue,
             workspaceValue,
-            workspaceFolderValue
         } = super.getUnsafe();
         // Get the (pre-converted) values of the deprecated configuration from the delegated instance
         const {
             defaultValue:         deprDefaultValue,
             globalValue:          deprGlobalValue,
             workspaceValue:       deprWorkspaceValue,
-            workspaceFolderValue: deprWorkspaceFolderValue
         } = this.handlerToDepr.getUnsafe();
         return {
             defaultValue,
             globalValue,
             workspaceValue,
-            workspaceFolderValue,
             deprDefaultValue,
             deprGlobalValue,
             deprWorkspaceValue,
-            deprWorkspaceFolderValue,
         };
     }
 
@@ -182,21 +169,6 @@ export class ConfigurationHandlerCompat<T, D> extends ConfigurationHandler<T> {
     }
 
     /**
-     * Set the value of the new configuration in the current workspace within a multi-root workspace 
-     * environment.
-     * 
-     * To disable it, set to `undefined`.
-     * 
-     * @return A promise that resolves when the update is complete.
-     * 
-     * @throws If there is no workspace currently opened OR if we are not in a multi-root workspace
-     *         environment, VS Code will throw an error of unspecified type.
-     */
-    public async setWorkspaceFolderValue(value: T | undefined): Promise<void> {
-        return super.setWorkspaceFolderValue(value);
-    }
-
-    /**
      * Set the value of the deprecated configuration globally. This value will be stored in the user's 
      * global 'User Settings' file. 
      * 
@@ -222,21 +194,6 @@ export class ConfigurationHandlerCompat<T, D> extends ConfigurationHandler<T> {
      */
     public async setDeprWorkspaceValue(value: D | undefined): Promise<void> {
         return this.handlerToDepr.setWorkspaceValue(value);
-    }
-
-    /**
-     * Set the value of the deprecated configuration in the current workspace within a multi-root 
-     * workspace environment.
-     * 
-     * To disable it, set to `undefined`.
-     * 
-     * @return A promise that resolves when the update is complete.
-     * 
-     * @throws If there is no workspace currently opened OR if we are not in a multi-root workspace
-     *         environment, VS Code will throw an error of unspecified type.
-     */
-    public async setDeprWorkspaceFolderValue(value: D | undefined): Promise<void> {
-        return this.handlerToDepr.setWorkspaceFolderValue(value);
     }
 
     /**
@@ -272,8 +229,8 @@ export class ConfigurationHandlerCompat<T, D> extends ConfigurationHandler<T> {
     }
 
     /**
-     * Migrate the global, workspace or the workspace folder values of the deprecated configuration 
-     * over to the new one, but only ones which pass type checking.
+     * Migrate the global and workspace values of the deprecated configuration over to the new one, 
+     * but only ones which pass type checking.
      * 
      * Each value that passes type checking will be converted to the new format on move, with the
      * conversion defined by the `normalize` callback provided in the constructor. After being moved, 
@@ -286,7 +243,6 @@ export class ConfigurationHandlerCompat<T, D> extends ConfigurationHandler<T> {
         const {
             globalValue:          deprGlobalValuePre,
             workspaceValue:       deprWorkspaceValuePre,
-            workspaceFolderValue: deprWorkspaceFolderValuePre
         } = this.handlerToDepr.getUnsafe();
         if (deprGlobalValuePre !== undefined) {
             await this.setGlobalValue(this.args2.normalize(deprGlobalValuePre));
@@ -296,10 +252,6 @@ export class ConfigurationHandlerCompat<T, D> extends ConfigurationHandler<T> {
             await this.setWorkspaceValue(this.args2.normalize(deprWorkspaceValuePre));
             await this.setDeprWorkspaceValue(undefined);
         }
-        if (deprWorkspaceFolderValuePre !== undefined) {
-            await this.setWorkspaceFolderValue(this.args2.normalize(deprWorkspaceFolderValuePre));
-            await this.setDeprWorkspaceFolderValue(undefined);
-        }
     }
 
     /** 
@@ -308,15 +260,12 @@ export class ConfigurationHandlerCompat<T, D> extends ConfigurationHandler<T> {
      * More specifically, this function returns `true` if either one of the following is defined:
      * - deprGlobalValue
      * - deprWorkspaceValue
-     * - deprWorkspaceFolderValue
      * 
      * @throws In the same circumstances as `get()`.
      */
     public hasUserDefinedDeprValues(): boolean {
-        const { deprGlobalValue, deprWorkspaceValue, deprWorkspaceFolderValue } = this.get();
-        return deprGlobalValue          !== undefined 
-            || deprWorkspaceValue       !== undefined 
-            || deprWorkspaceFolderValue !== undefined;
+        const { deprGlobalValue, deprWorkspaceValue } = this.get();
+        return deprGlobalValue !== undefined  || deprWorkspaceValue !== undefined;
     }
 
 } 

@@ -5,7 +5,6 @@ export interface Values<T> {
     defaultValue:         T;
     globalValue:          T | undefined;
     workspaceValue:       T | undefined;
-    workspaceFolderValue: T | undefined;
     effectiveValue:       T;
 }
 
@@ -13,18 +12,15 @@ export interface ValuesUnsafe<T> {
     defaultValue:         T | undefined;
     globalValue:          T | undefined;
     workspaceValue:       T | undefined;
-    workspaceFolderValue: T | undefined;
 }
 
 export interface ValuesCompat<T, D> extends Values<T> {
     defaultValue:             T;
     globalValue:              T | undefined;
     workspaceValue:           T | undefined;
-    workspaceFolderValue:     T | undefined;
     deprDefaultValue:         D | undefined;
     deprGlobalValue:          D | undefined;
     deprWorkspaceValue:       D | undefined;
-    deprWorkspaceFolderValue: D | undefined;
     effectiveValue:           T;
 }
 
@@ -32,9 +28,7 @@ export interface ValuesCompatUnsafe<T, D> extends ValuesUnsafe<T> {
     defaultValue:             T | undefined;
     globalValue:              T | undefined;
     workspaceValue:           T | undefined;
-    workspaceFolderValue:     T | undefined;
     deprDefaultValue:         D | undefined;
     deprGlobalValue:          D | undefined;
     deprWorkspaceValue:       D | undefined;
-    deprWorkspaceFolderValue: D | undefined;
 }

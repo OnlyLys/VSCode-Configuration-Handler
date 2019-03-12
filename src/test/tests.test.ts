@@ -2,7 +2,6 @@ import * as assert from 'assert';
 import { ConfigurationHandler } from "../configuration-handler";
 import { ConfigurationHandlerCompat } from "../configuration-handler-compat";
 import { Values, ValuesCompat } from '../values';
-import { workspace, window, Uri } from 'vscode';
 
 /* Note that VS Code only runs tests on files that are suff with `test.ts`. This explains the naming 
 of this file. */
@@ -46,179 +45,82 @@ const testGlobalValue = [ "()" ];
 /** Workspace value that we set and would expect to get from `testHandler.get()` */
 const testWorkspaceValue = [ "[]" ];
 
-/** Workspace folder value that we set and would expect to get from `testHandler.get()` */
-const testWorkspaceFolderValue = [ "{}" ];
+describe('ConfigurationHandler Tests', function () {
 
-describe('ConfigurationHandler', function () {
-
-    // Open the text file `text.md` within the first workspace
-    before('Open test workspace 1', async function () {
-        const workspaceFolders = workspace.workspaceFolders;
-        if (workspaceFolders) {
-            const textFilePath = workspaceFolders[0].uri.path + '/text.md';
-            await window.showTextDocument(Uri.file((textFilePath)));
-        } else {
-            throw new Error('Unable to open test workspace!');
-        }
+    describe('# Set initial default state', function() {
+        it('set', async function () {
+            await testHandler.setGlobalValue(undefined);
+            await testHandler.setWorkspaceValue(undefined);
     });
-
-    describe('# Get and set various combinations of values', function () {
-
-        describe('1: default only', function () {
-            it('get', function () {
+        it('check', function () {
                 assertValues(testHandler.get(), {
                     defaultValue:         expectedDefaultValue,
                     globalValue:          undefined,
                     workspaceValue:       undefined,
-                    workspaceFolderValue: undefined,
                     effectiveValue:       expectedDefaultValue
                 });
             });
         });
 
-        describe('2: default + global', function () {
+    describe('# Set and check various combinations of values', function () {
+
+        describe('## 1: global only', function () {
             it('set', async function () {
                 await testHandler.setGlobalValue(testGlobalValue);
                 await testHandler.setWorkspaceValue(undefined);
-                await testHandler.setWorkspaceFolderValue(undefined);
             });
-            it('get', function () {
+            it('check', function () {
                 assertValues(testHandler.get(), {
                     defaultValue:         expectedDefaultValue,
                     globalValue:          testGlobalValue,
                     workspaceValue:       undefined,
-                    workspaceFolderValue: undefined,
                     effectiveValue:       testGlobalValue
                 });
             });
         });
     
-        describe('3: default + workspace', function () {
+        describe('## 2: workspace only', function () {
             it('set', async function () {
                 await testHandler.setGlobalValue(undefined);
                 await testHandler.setWorkspaceValue(testWorkspaceValue);
-                await testHandler.setWorkspaceFolderValue(undefined);
             });
-            it('get', function () {
+            it('check', function () {
                 assertValues(testHandler.get(), {
                     defaultValue:         expectedDefaultValue,
                     globalValue:          undefined,
                     workspaceValue:       testWorkspaceValue,
-                    workspaceFolderValue: undefined,
                     effectiveValue:       testWorkspaceValue
                 });
             });
         });
     
-        describe('4: default + workspace folder', function () {
-            it('set', async function () {
-                await testHandler.setGlobalValue(undefined);
-                await testHandler.setWorkspaceValue(undefined);
-                await testHandler.setWorkspaceFolderValue(testWorkspaceFolderValue);
-            });
-            it('get', function () {
-                assertValues(testHandler.get(), {
-                    defaultValue:         expectedDefaultValue,
-                    globalValue:          undefined,
-                    workspaceValue:       undefined,
-                    workspaceFolderValue: testWorkspaceFolderValue,
-                    effectiveValue:       testWorkspaceFolderValue
-                });
-            });
-        });
-
-        describe('5: default + global + workspace', function () {
+        describe('## 3: global and workspace', function () {
             it('set', async function () {
                 await testHandler.setGlobalValue(testGlobalValue);
                 await testHandler.setWorkspaceValue(testWorkspaceValue);
-                await testHandler.setWorkspaceFolderValue(undefined);
             });
-            it('get', function () {
+            it('check', function () {
                 assertValues(testHandler.get(), {
                     defaultValue:         expectedDefaultValue,
                     globalValue:          testGlobalValue,
                     workspaceValue:       testWorkspaceValue,
-                    workspaceFolderValue: undefined,
                     effectiveValue:       testWorkspaceValue
                 });
             });
         });
     
-        describe('6: default + global + workspace folder', function () {
-            it('set', async function () {
-                await testHandler.setGlobalValue(testGlobalValue);
-                await testHandler.setWorkspaceValue(undefined);
-                await testHandler.setWorkspaceFolderValue(testWorkspaceFolderValue);
-            });
-            it('get', function () {
-                assertValues(testHandler.get(), {
-                    defaultValue:         expectedDefaultValue,
-                    globalValue:          testGlobalValue,
-                    workspaceValue:       undefined,
-                    workspaceFolderValue: testWorkspaceFolderValue,
-                    effectiveValue:       testWorkspaceFolderValue
-                });
-            });
         });
     
-        describe('7: default + workspace + workspace folder', function () {
-            it('set', async function () {
-                await testHandler.setGlobalValue(undefined);
-                await testHandler.setWorkspaceValue(testWorkspaceValue);
-                await testHandler.setWorkspaceFolderValue(testWorkspaceFolderValue);
-            });
-            it('get', function () {
-                assertValues(testHandler.get(), {
-                    defaultValue:         expectedDefaultValue,
-                    globalValue:          undefined,
-                    workspaceValue:       testWorkspaceValue,
-                    workspaceFolderValue: testWorkspaceFolderValue,
-                    effectiveValue:       testWorkspaceFolderValue
-                });
-            });
-        });
-    
-        describe('8: default + global + workspace + workspace folder', function () {
-            it('set', async function () {
-                await testHandler.setGlobalValue(testGlobalValue);
-                await testHandler.setWorkspaceValue(undefined);
-                await testHandler.setWorkspaceFolderValue(undefined);
-            });
-            it('get', function () {
-                assertValues(testHandler.get(), {
-                    defaultValue:         expectedDefaultValue,
-                    globalValue:          testGlobalValue,
-                    workspaceValue:       testWorkspaceValue,
-                    workspaceFolderValue: testWorkspaceFolderValue,
-                    effectiveValue:       testWorkspaceFolderValue
-                });
-            });
-        });
-
-    }); 
-
-    describe('Switch between two workspaces that have different values', function () {
-
-        //TODO: Set `workspace-2`
-        // TODO: Get `workspace-2`
-        // TODO: Set `workspace-3`
-        // TODO: Get `workspace-3`
-        // TODO: Switch and realise things change
-
-    });
-
-    describe('Restore to initial default state', function() {
+    describe('# Restore to initial default state', function() {
         it('set', async function () {
             await testHandler.setGlobalValue(undefined);
             await testHandler.setWorkspaceValue(undefined);
-            await testHandler.setWorkspaceFolderValue(undefined);
         });
-        it('get', function () {
+        it('check', function () {
             assertValues(testHandler.get(), {
                 defaultValue:         expectedDefaultValue,
                 globalValue:          undefined,
                 workspaceValue:       undefined,
-                workspaceFolderValue: undefined,
                 effectiveValue:       expectedDefaultValue
             });
         });

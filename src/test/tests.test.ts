@@ -31,12 +31,10 @@ const testHandler = new ConfigurationHandler<ConfigurationFormat>({
     typeCheck
 });
 
-/** Compare the values of `expected` to that of `testHandler.get()` */
 function assertValues<T>(actual: Values<T>, expected: Values<T>): void {
     assert.deepStrictEqual(actual, expected);
 }
 
-/** Default value that we would expect to get.  */
 const expectedDefaultValue = [ "()", "[]", "{}", "<>", "``", "''", "\"\"" ];
 
 /** Global value that we set and would expect to get from `testHandler.get()` */
@@ -54,15 +52,15 @@ describe('ConfigurationHandler Tests', function () {
     });
         it('check', function () {
                 assertValues(testHandler.get(), {
-                    defaultValue:         expectedDefaultValue,
-                    globalValue:          undefined,
-                    workspaceValue:       undefined,
-                    effectiveValue:       expectedDefaultValue
+                defaultValue:   expectedDefaultValue,
+                globalValue:    undefined,
+                workspaceValue: undefined,
+                effectiveValue: expectedDefaultValue
                 });
             });
         });
 
-    describe('# Set and check various combinations of values', function () {
+    describe('# Set various combinations of values', function () {
 
         describe('## 1: global only', function () {
             it('set', async function () {
@@ -71,10 +69,10 @@ describe('ConfigurationHandler Tests', function () {
             });
             it('check', function () {
                 assertValues(testHandler.get(), {
-                    defaultValue:         expectedDefaultValue,
-                    globalValue:          testGlobalValue,
-                    workspaceValue:       undefined,
-                    effectiveValue:       testGlobalValue
+                    defaultValue:   expectedDefaultValue,
+                    globalValue:    testGlobalValue,
+                    workspaceValue: undefined,
+                    effectiveValue: testGlobalValue
                 });
             });
         });
@@ -86,10 +84,10 @@ describe('ConfigurationHandler Tests', function () {
             });
             it('check', function () {
                 assertValues(testHandler.get(), {
-                    defaultValue:         expectedDefaultValue,
-                    globalValue:          undefined,
-                    workspaceValue:       testWorkspaceValue,
-                    effectiveValue:       testWorkspaceValue
+                    defaultValue:   expectedDefaultValue,
+                    globalValue:    undefined,
+                    workspaceValue: testWorkspaceValue,
+                    effectiveValue: testWorkspaceValue
                 });
             });
         });
@@ -101,10 +99,10 @@ describe('ConfigurationHandler Tests', function () {
             });
             it('check', function () {
                 assertValues(testHandler.get(), {
-                    defaultValue:         expectedDefaultValue,
-                    globalValue:          testGlobalValue,
-                    workspaceValue:       testWorkspaceValue,
-                    effectiveValue:       testWorkspaceValue
+                    defaultValue:   expectedDefaultValue,
+                    globalValue:    testGlobalValue,
+                    workspaceValue: testWorkspaceValue,
+                    effectiveValue: testWorkspaceValue
                 });
             });
         });
@@ -127,8 +125,6 @@ describe('ConfigurationHandler Tests', function () {
     });
 
 });
-
-
 
 // ------------------------------------------------------------------
 // CONFIGURATION HANDLER COMPAT

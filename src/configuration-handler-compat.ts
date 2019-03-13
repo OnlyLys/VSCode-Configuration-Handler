@@ -60,12 +60,8 @@ export class ConfigurationHandlerCompat<T, D> extends ConfigurationHandler<T> {
      * present are returned as `undefined`. However, just like in the base class, the default value 
      * of the new configuration be defined and pass typecheck, otherwise this method will throw.
      * 
-     * @throws 
-     *  1. `ConfigurationNotRecognizedError` if the editor does not recognize either configurations
-     *     we are trying to access. Please check that the correct `name` and `deprName` were provided 
-     *     in the constructor of this configuration handler.
-     *  2. `ConfigurationBadDefaultError` if the new configuration is missing a default value or fails
-     *     typecheck.
+     * @throws `ConfigurationBadDefaultError` if the new configuration is missing a default value or 
+     *         fails typecheck.
      */
     public get(): ValuesCompat<T, D> {
         const {
@@ -114,10 +110,6 @@ export class ConfigurationHandlerCompat<T, D> extends ConfigurationHandler<T> {
      * 
      * For the above reasons, unless special need arises, `get()` is the method that you should be
      * using.
-     * 
-     * @throws `ConfigurationNotRecognizedError` if the editor does not recognize either configurations
-     *         we are trying to access. Please check that the correct `name` and `deprName` were 
-     *         provided in the constructor of this configuration handler.
      */
     public getUnsafe(): ValuesCompatUnsafe<T, D> {
         const {

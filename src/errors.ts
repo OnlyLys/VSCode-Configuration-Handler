@@ -1,11 +1,3 @@
-/** Error that is thrown when trying to access a configuration that the editor does not recognize. */
-export class ConfigurationNotRecognizedError extends Error {
-    public constructor(fullName: string) {
-        super(`Configuration not recognized: ${fullName} (Check that the correct configuration name is provided)`);
-        this.name = 'ConfigurationNotRecognizedError';
-    }
-}
-
 /** Error that is thrown if the configuration has a missing or invalid default value. */
 export class ConfigurationBadDefaultError extends Error {
     public constructor(fullName: string) {

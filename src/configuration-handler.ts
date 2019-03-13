@@ -1,5 +1,5 @@
 import { ConfigurationTarget, workspace } from 'vscode';
-import { ConfigurationBadDefaultError, ConfigurationNotRecognizedError, ConfigurationNameEmptyError } from './errors';
+import { ConfigurationBadDefaultError, ConfigurationNameEmptyError } from './errors';
 import { Values, ValuesUnsafe } from './values';
 
 /** 
@@ -39,14 +39,10 @@ export class ConfigurationHandler<T> {
      * present are returned as `undefined`. However, as mentioned above, the default value must be 
      * defined and pass typecheck, otherwise this method will throw.
      * 
-     * @throws 
-     *  1. `ConfigurationNotRecognizedError` if the editor does not recognize the configuraiton we are 
-     *     trying to access. Please check that the correct `name` was provided in the constructor of
-     *     this configuration handler.
-     *  2. `ConfigurationBadDefaultError` if the configuration is missing a default value or fails
-     *     typecheck.
+     * @throws `ConfigurationBadDefaultError` if the configuration is missing a default value or 
+     *         fails typecheck.
      */
-    public get(): Values<T>  {
+    public get(): Values<T> {
         const {
             defaultValue,
             globalValue,
@@ -61,7 +57,7 @@ export class ConfigurationHandler<T> {
                 return workspaceValue;
             } else if (globalValue !== undefined) {
                 return globalValue;
-            } else {
+            } else { 
                 return defaultValue;
             }
         })();
@@ -82,18 +78,15 @@ export class ConfigurationHandler<T> {
      *
      * For the above reasons, unless special need arises, `get()` is the method that you should be
      * using. 
-     *
-     * @throws `ConfigurationNotRecognizedError` if the editor does not recognize the configuration 
-     *         we are trying to access. Please check that the correct `name` was provided in the 
-     *         constructor of this configuration handler.
      */
     public getUnsafe(): ValuesUnsafe<T> {
         // Get the values of the configuration using VS Code's API
         const section = workspace.getConfiguration(this.sectionName);
         const inspect = section.inspect<any>(this.childName);
-        // Throw if `inspect` is `undefined`, that means the editor does not recognize this configuration
+        /* I have no idea under what circumstances `inspect` is `undefined`. So I'll just throw a
+        generic `Error` here. */
         if (!inspect) {
-            throw new ConfigurationNotRecognizedError(this.args.name);
+            throw new Error(`Unexpected error: Inspecting ${this.args.name} yields 'undefined'.`);
         }
         // Typecheck the values
         const check = (value?: T) => this.args.typeCheck(value) ? value : undefined;

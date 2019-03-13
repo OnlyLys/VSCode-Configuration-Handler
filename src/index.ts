@@ -4,5 +4,4 @@ export { ConfigurationHandlerCompat } from './configuration-handler-compat';
 export {
     ConfigurationBadDefaultError,
     ConfigurationNameEmptyError,
-    ConfigurationNotRecognizedError
 } from './errors';

@@ -26,7 +26,7 @@
             "title": "VSCode Configuration Handler Test Configurations",
             "properties": {
                 "@onlylys/vscode-configuration-handler.config": {
-                    "$comment": "This test configuration was inspired by `Leaper.detectedPairs`.",
+                    "$comment": "This test configuration was inspired by `Leaper.detectedPairs`. Each element in the array must have exact length of 2. The exact JSON schema is not provided here.",
                     "type": "array",
                     "default": [
                         "()",
@@ -71,6 +71,25 @@
                             "open": "\"",
                             "close": "\""
                         }
+                    ],
+                    "markdownDescription": "DO NOT USE. For tests only!"
+                },
+                "@onlylys/vscode-configuration-handler.configMissingDefaultValue": {
+                    "$comment": "This test configuration is the same as `@onlylys/vscode-configuration-handler.config` but without a default value.",
+                    "type": "array",
+                    "markdownDescription": "DO NOT USE. For tests only!"
+                },
+                "@onlylys/vscode-configuration-handler.configBadDefaultValue": {
+                    "$comment": "This test configuration is the same as `@onlylys/vscode-configuration-handler.config` but with a bad default value.",
+                    "type": "array",
+                    "default": [
+                        "(())",
+                        "[]",
+                        "{}",
+                        "<>",
+                        "``",
+                        "''",
+                        "\"\""
                     ],
                     "markdownDescription": "DO NOT USE. For tests only!"
                 }

@@ -74,11 +74,6 @@
                     ],
                     "markdownDescription": "DO NOT USE. For tests only!"
                 },
-                "@onlylys/vscode-configuration-handler.configMissingDefaultValue": {
-                    "$comment": "This test configuration is the same as `@onlylys/vscode-configuration-handler.config` but without a default value.",
-                    "type": "array",
-                    "markdownDescription": "DO NOT USE. For tests only!"
-                },
                 "@onlylys/vscode-configuration-handler.configBadDefaultValue": {
                     "$comment": "This test configuration is the same as `@onlylys/vscode-configuration-handler.config` but with a bad default value.",
                     "type": "array",

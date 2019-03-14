@@ -87,6 +87,41 @@
                         "\"\""
                     ],
                     "markdownDescription": "DO NOT USE. For tests only!"
+                },
+                "@onlylys/vscode-configuration-handler.deprConfigBadDefaultValue": {
+                    "$comment": "This test configuration is the same as `@onlylys/vscode-configuration-handler.deprConfig` but with a bad default value.",
+                    "type": "array",
+                    "default": [
+                        {
+                            "open": "((",
+                            "close": "))"
+                        },
+                        {
+                            "open": "[",
+                            "close": "]"
+                        },
+                        {
+                            "open": "{",
+                            "close": "}"
+                        },
+                        {
+                            "open": "<",
+                            "close": ">"
+                        },
+                        {
+                            "open": "`",
+                            "close": "`"
+                        },
+                        {
+                            "open": "'",
+                            "close": "'"
+                        },
+                        {
+                            "open": "\"",
+                            "close": "\""
+                        }
+                    ],
+                    "markdownDescription": "DO NOT USE. For tests only!"
                 }
             }
         }

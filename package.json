@@ -131,9 +131,8 @@
         "watch": "tsc --watch",
         "prepare": "node ./node_modules/vscode/bin/install",
         "prepack": "npm run build",
-        "pretest": "npm run build && node ./scripts/create-test-environment.js",
-        "test": "node ./scripts/launch-tests-shell.js",
-        "posttest": "node ./scripts/delete-test-environment.js"
+        "pretest": "npm run build",
+        "test": "node ./scripts/launch-tests.js"
     },
     "engines": {
         "vscode": "^1.32.0"

@@ -10,14 +10,6 @@
             "presentation": {
                 "reveal": "never",
             }
-		},
-		{
-			"type": "npm",
-			"script": "posttest",
-			"group": "none",
-            "presentation": {
-                "reveal": "never",
-            }
 		}
 	]
 }

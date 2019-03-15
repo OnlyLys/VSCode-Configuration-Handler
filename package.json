@@ -136,7 +136,7 @@
         "posttest": "node ./scripts/delete-test-environment.js"
     },
     "engines": {
-        "vscode": "^1.28.0"
+        "vscode": "^1.32.0"
     },
     "devDependencies": {
         "typescript": "^3.3.1",

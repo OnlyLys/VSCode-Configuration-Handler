@@ -7,19 +7,23 @@
         "name": "L.Y. Sim",
         "email": "OnlyLys@protonmail.com"
     },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/OnlyLys/VSCode-Configuration-Handler.git"
+    },
+    "homepage": "https://github.com/OnlyLys/VSCode-Configuration-Handler",
+    "bugs": {
+        "url": "https://github.com/OnlyLys/VSCode-Configuration-Handler/issues"
+    },
     "license": "MIT",
     "main": "./out/index.js",
-    "types": "./out/types/index.d.ts",
     "files": [
         "./out/*.js",
         "./out/*.js.map",
         "./out/types"
     ],
+    "types": "./out/types/index.d.ts",
     "activationEvents": [],
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/npm/cli.git"
-    },
     "contributes": {
         "configuration": {
             "type": "object",

@@ -18,9 +18,9 @@
     "license": "MIT",
     "main": "./out/index.js",
     "files": [
-        "./out/*.js",
-        "./out/*.js.map",
-        "./out/types"
+        "out/*.js",
+        "out/*.js.map",
+        "out/types"
     ],
     "types": "./out/types/index.d.ts",
     "activationEvents": [],

@@ -1,7 +1,7 @@
 {
     "name": "@onlylys/vscode-configuration-handler",
     "description": "Utility class to make handling configurations in VS Code extensions easier. This is primarily a shared dependency for the extensions I am working on.",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "publisher": "OnlyLys",
     "author": {
         "name": "L.Y. Sim",

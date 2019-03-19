@@ -183,16 +183,15 @@ type TestDeprConfigurationFormat = { open: string, close: string }[];
 
 /** Type guard for `DeprConfigurationFormat`. */
 function deprTypeCheck(value: any): value is TestDeprConfigurationFormat {
-    return Array.isArray(value) && value.every((elem: any) => {
-        if (typeof elem !== 'object' || Reflect.ownKeys(elem).length !== 2) {
-            return false;
-        }
-        const { open, close } = elem;
-        return typeof open  === 'string' 
-            && typeof close === 'string'
-            && open.length  === 1
-            && close.length === 1;
-    });
+    return Array.isArray(value) 
+        && value.every((elem: any) => {
+            return typeof elem === 'object'
+            && Reflect.ownKeys(elem).length === 2
+            && typeof elem.open  === 'string' 
+            && typeof elem.close === 'string'
+            && elem.open.length  === 1
+            && elem.close.length === 1;
+        });
 }
 
 /** Callback to transform from the old format to the new one. */

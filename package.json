@@ -1,7 +1,7 @@
 {
     "name": "@onlylys/vscode-configuration-handler",
     "description": "Utility class to make handling configurations in VS Code extensions easier. This is primarily a shared dependency for the extensions I am working on.",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "publisher": "OnlyLys",
     "author": {
         "name": "L.Y. Sim",
@@ -20,7 +20,7 @@
     "files": [
         "out/*.js",
         "out/*.js.map",
-        "out/types"
+        "out/types/*.d.ts"
     ],
     "types": "./out/types/index.d.ts",
     "activationEvents": [],

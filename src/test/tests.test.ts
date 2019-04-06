@@ -43,28 +43,28 @@ describe('ConfigurationHandler Tests', function () {
 
     describe('# Set and get various combinations of values', function () {
 
-        describe('1: default only', function() {
+        describe('Default only', function() {
             setGet({
                 globalValue:    undefined,
                 workspaceValue: undefined
             });
         });
 
-        describe('2: default + global', function () {
+        describe('Default + global', function () {
             setGet({
                 globalValue:    testGlobalValue,
                 workspaceValue: undefined
             });
         });
     
-        describe('3: default + workspace', function () {
+        describe('Default + workspace', function () {
             setGet({
                 globalValue:    undefined,
                 workspaceValue: testWorkspaceValue
             });
         });
     
-        describe('4: default + global + workspace', function () {
+        describe('Default + global + workspace', function () {
             setGet({
                 globalValue:    testGlobalValue,
                 workspaceValue: testWorkspaceValue
@@ -232,7 +232,7 @@ describe('ConfigurationHandlerCompat Tests', function () {
 
     describe('# Set and get various combinations of values', function () {
 
-        describe('1: default only', function() {
+        describe('Default only', function() {
             setGet({
                 globalValue:        undefined,
                 workspaceValue:     undefined,
@@ -241,7 +241,7 @@ describe('ConfigurationHandlerCompat Tests', function () {
             });
         });
 
-        describe('2: default + global', function () {
+        describe('Default + global', function () {
             setGet({
                 globalValue:        testGlobalValue,
                 workspaceValue:     undefined,
@@ -250,7 +250,7 @@ describe('ConfigurationHandlerCompat Tests', function () {
             });
         });
 
-        describe('3: default + workspace', function () {
+        describe('Default + workspace', function () {
             setGet({
                 globalValue:        undefined,
                 workspaceValue:     testWorkspaceValue,
@@ -259,7 +259,7 @@ describe('ConfigurationHandlerCompat Tests', function () {
             });
         });
 
-        describe('4: default + deprecated global', function () {
+        describe('Default + deprecated global', function () {
             setGet({
                 globalValue:        undefined,
                 workspaceValue:     undefined,
@@ -268,7 +268,7 @@ describe('ConfigurationHandlerCompat Tests', function () {
             });
         });
 
-        describe('5: default + deprecated workspace', function () {
+        describe('Default + deprecated workspace', function () {
             setGet({
                 globalValue:        undefined,
                 workspaceValue:     undefined,
@@ -277,7 +277,7 @@ describe('ConfigurationHandlerCompat Tests', function () {
             });
         });
 
-        describe('6: default + global + workspace', function () {
+        describe('Default + global + workspace', function () {
             setGet({
                 globalValue:        testGlobalValue,
                 workspaceValue:     testWorkspaceValue,
@@ -286,7 +286,7 @@ describe('ConfigurationHandlerCompat Tests', function () {
             });
         });
 
-        describe('7: default + global + deprecated global', function () {
+        describe('Default + global + deprecated global', function () {
             setGet({
                 globalValue:        testGlobalValue,
                 workspaceValue:     undefined,
@@ -295,7 +295,7 @@ describe('ConfigurationHandlerCompat Tests', function () {
             });
         });
 
-        describe('8: default + global + deprecated workspace', function () {
+        describe('Default + global + deprecated workspace', function () {
             setGet({
                 globalValue:        testGlobalValue,
                 workspaceValue:     undefined,
@@ -304,7 +304,7 @@ describe('ConfigurationHandlerCompat Tests', function () {
             });
         });
 
-        describe('9: default + workspace + deprecated global', function () {
+        describe('Default + workspace + deprecated global', function () {
             setGet({
                 globalValue:        undefined,
                 workspaceValue:     testWorkspaceValue,
@@ -313,7 +313,7 @@ describe('ConfigurationHandlerCompat Tests', function () {
             });
         });
 
-        describe('10: default + workspace + deprecated workspace', function () {
+        describe('Default + workspace + deprecated workspace', function () {
             setGet({
                 globalValue:        undefined,
                 workspaceValue:     testWorkspaceValue,
@@ -322,7 +322,7 @@ describe('ConfigurationHandlerCompat Tests', function () {
             });
         });
 
-        describe('11: default + deprecated global + deprecated workspace', function () {
+        describe('Default + deprecated global + deprecated workspace', function () {
             setGet({
                 globalValue:        undefined,
                 workspaceValue:     undefined,
@@ -331,7 +331,7 @@ describe('ConfigurationHandlerCompat Tests', function () {
             });
         });
 
-        describe('12: default + global + workspace + deprecated global', function () {
+        describe('Default + global + workspace + deprecated global', function () {
             setGet({
                 globalValue:        testGlobalValue,
                 workspaceValue:     testWorkspaceValue,
@@ -340,7 +340,7 @@ describe('ConfigurationHandlerCompat Tests', function () {
             });
         });
 
-        describe('13: default + global + workspace + deprecated workspace', function () {
+        describe('Default + global + workspace + deprecated workspace', function () {
             setGet({
                 globalValue:        testGlobalValue,
                 workspaceValue:     testWorkspaceValue,
@@ -349,7 +349,7 @@ describe('ConfigurationHandlerCompat Tests', function () {
             });
         });
 
-        describe('14: default + global + deprecated global + deprecated workspace', function () {
+        describe('Default + global + deprecated global + deprecated workspace', function () {
             setGet({
                 globalValue:        testGlobalValue,
                 workspaceValue:     undefined,
@@ -358,7 +358,7 @@ describe('ConfigurationHandlerCompat Tests', function () {
             });
         });
 
-        describe('15: default + workspace + deprecated global + deprecated workspace', function () {
+        describe('Default + workspace + deprecated global + deprecated workspace', function () {
             setGet({
                 globalValue:        undefined,
                 workspaceValue:     testWorkspaceValue,
@@ -367,7 +367,7 @@ describe('ConfigurationHandlerCompat Tests', function () {
             });
         });
 
-        describe('16: default + global + workspace + deprecated global + deprecated workspace', function () {
+        describe('Default + global + workspace + deprecated global + deprecated workspace', function () {
             setGet({
                 globalValue:        testGlobalValue,
                 workspaceValue:     testWorkspaceValue,

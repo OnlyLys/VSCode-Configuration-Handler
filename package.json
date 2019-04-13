@@ -1,7 +1,7 @@
 {
     "name": "@onlylys/vscode-configuration-handler",
     "description": "Utility class to make handling configurations in VS Code extensions easier. This is primarily a shared dependency for the extensions I am working on.",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "publisher": "OnlyLys",
     "author": {
         "name": "L.Y. Sim",
@@ -142,11 +142,11 @@
         "vscode": "^1.32.0"
     },
     "devDependencies": {
-        "typescript": "^3.3.1",
-        "vscode": "^1.1.28",
-        "tslint": "^5.12.1",
-        "@types/node": "^10.12.21",
         "@types/mocha": "^2.2.42",
-        "shelljs": "^0.8.3"
+        "@types/node": "^10.14.4",
+        "shelljs": "^0.8.3",
+        "tslint": "^5.15.0",
+        "typescript": "^3.4.3",
+        "vscode": "^1.1.33"
     }
 }

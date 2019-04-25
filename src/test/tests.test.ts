@@ -21,14 +21,14 @@ const name = `@onlylys/vscode-configuration-handler.config`;
 type TestConfigurationFormat = string[];
 
 /** Type guard for `TestConfigurationFormat`. */
-function typeCheck(value: any): value is TestConfigurationFormat {
+function typecheck(value: any): value is TestConfigurationFormat {
     return Array.isArray(value) && value.every((elem: any) => typeof elem === 'string' && elem.length === 2);
 }
 
 /** Hanlder to our test configuration. */
 const testHandler = new ConfigurationHandler({
     name,
-    typeCheck
+    typecheck
 });
 
 const expectedDefaultValue: TestConfigurationFormat = [ "()", "[]", "{}", "<>", "``", "''", "\"\"" ];
@@ -111,7 +111,7 @@ describe('ConfigurationHandler Tests', function () {
                 // @ts-ignore Ignore the 'unused variable' warning
                 const badInstance = new ConfigurationHandler<TestConfigurationFormat>({
                     name: '',
-                    typeCheck
+                    typecheck
                 });
             }, new ConfigurationNameEmptyError());
         });
@@ -120,7 +120,7 @@ describe('ConfigurationHandler Tests', function () {
             assert.throws(function () {
                 const badInstance = new ConfigurationHandler<TestConfigurationFormat>({
                     name: `${name}BadDefaultValue`,
-                    typeCheck
+                    typecheck
                 });
                 // This call should throw
                 badInstance.get();
@@ -128,14 +128,14 @@ describe('ConfigurationHandler Tests', function () {
         });
 
         it('Throw when bad typecheck callback', function () {
-            function badTypeCheck(value: any): value is TestConfigurationFormat {
+            function badTypecheck(value: any): value is TestConfigurationFormat {
                 return Array.isArray(value) 
                     && value.every((elem: any) => typeof elem === 'string' && elem.length === 1);
             }
             assert.throws(function () {
                 const badInstance = new ConfigurationHandler<TestConfigurationFormat>({
                     name,
-                    typeCheck: badTypeCheck
+                    typecheck: badTypecheck
                 });
                 // This call should throw
                 badInstance.get();
@@ -182,7 +182,7 @@ const deprName = `@onlylys/vscode-configuration-handler.deprConfig`;
 type TestDeprConfigurationFormat = { open: string, close: string }[];
 
 /** Type guard for `DeprConfigurationFormat`. */
-function deprTypeCheck(value: any): value is TestDeprConfigurationFormat {
+function deprTypecheck(value: any): value is TestDeprConfigurationFormat {
     return Array.isArray(value) 
         && value.every((elem: any) => {
             return typeof elem === 'object'
@@ -202,9 +202,9 @@ function normalize(deprConfig: TestDeprConfigurationFormat): TestConfigurationFo
 /** Backwards compatible handler to our test configuration and another deprecated one. */
 const testHandlerCompat = new ConfigurationHandlerCompat({
     name,
-    typeCheck,
+    typecheck,
     deprName,
-    deprTypeCheck,
+    deprTypecheck,
     normalize
 });
 
@@ -433,9 +433,9 @@ describe('ConfigurationHandlerCompat Tests', function () {
                 // @ts-ignore Ignore the 'unused variable' warning
                 const badInstance = new ConfigurationHandlerCompat({
                     name: '',
-                    typeCheck,
+                    typecheck,
                     deprName,
-                    deprTypeCheck,
+                    deprTypecheck,
                     normalize
                 });
             }, new ConfigurationNameEmptyError());
@@ -447,9 +447,9 @@ describe('ConfigurationHandlerCompat Tests', function () {
                 // @ts-ignore Ignore the 'unused variable' warning
                 const badInstance = new ConfigurationHandlerCompat({
                     name,
-                    typeCheck,
+                    typecheck,
                     deprName: '',
-                    deprTypeCheck,
+                    deprTypecheck,
                     normalize
                 });
             }, new ConfigurationNameEmptyError());
@@ -459,9 +459,9 @@ describe('ConfigurationHandlerCompat Tests', function () {
             assert.throws(function () {
                 const badInstance = new ConfigurationHandlerCompat({
                     name: `${name}BadDefaultValue`,
-                    typeCheck,
+                    typecheck,
                     deprName,
-                    deprTypeCheck,
+                    deprTypecheck,
                     normalize
                 });
                 // This call should throw
@@ -475,9 +475,9 @@ describe('ConfigurationHandlerCompat Tests', function () {
             assert.doesNotThrow(function () {
                 const instance = new ConfigurationHandlerCompat({
                     name,
-                    typeCheck,
+                    typecheck,
                     deprName: `${deprName}BadDefaultValue`,
-                    deprTypeCheck,
+                    deprTypecheck,
                     normalize
                 });
                 // This call should not throw
@@ -486,16 +486,16 @@ describe('ConfigurationHandlerCompat Tests', function () {
         });
 
         it('Throw when bad typecheck callback for new config', function () {
-            function badTypeCheck(value: any): value is TestConfigurationFormat {
+            function badTypecheck(value: any): value is TestConfigurationFormat {
                 return Array.isArray(value) 
                     && value.every((elem: any) => typeof elem === 'string' && elem.length === 1);
             }
             assert.throws(function () {
                 const badInstance = new ConfigurationHandlerCompat({
                     name,
-                    typeCheck: badTypeCheck,
+                    typecheck: badTypecheck,
                     deprName,
-                    deprTypeCheck,
+                    deprTypecheck,
                     normalize
                 });
                 // This call should throw

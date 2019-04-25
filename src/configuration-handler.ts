@@ -89,7 +89,7 @@ export class ConfigurationHandler<T> {
             throw new Error(`Unexpected error: Inspecting ${this.args.name} yields 'undefined'.`);
         }
         // Typecheck the values
-        const check = (value?: T) => this.args.typeCheck(value) ? value : undefined;
+        const check = (value?: T) => this.args.typecheck(value) ? value : undefined;
         const defaultValue   = check(inspect.defaultValue);
         const globalValue    = check(inspect.globalValue);
         const workspaceValue = check(inspect.workspaceValue);
@@ -149,13 +149,13 @@ export class ConfigurationHandler<T> {
      * Register a handler to a configuration. 
      * 
      * @param name Full name of the configuration as defined in the extension manifest.
-     * @param typeCheck Callback for type validation for each value of the configuration. 
+     * @param typecheck Callback for type validation for each value of the configuration. 
      * 
      * @throws `ConfigurationNameEmptyError` if `name` is empty.
      */
     public constructor(private readonly args: {
         name:      string,
-        typeCheck: (t: any) => t is T
+        typecheck: (t: any) => t is T
     }) {
         if (args.name.length === 0) {
             throw new ConfigurationNameEmptyError();

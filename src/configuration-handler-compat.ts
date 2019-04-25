@@ -192,9 +192,9 @@ export class ConfigurationHandlerCompat<T, D> extends ConfigurationHandler<T> {
      * Register a handler that simultaneously handles a new and deprecated configuration.
      * 
      * @param name Full name of the configuration as defined in the extension manifest.
-     * @param typeCheck Callback for type validation for each value of the configuration. 
+     * @param typecheck Callback for type validation for each value of the configuration. 
      * @param deprName Full name of the deprecated configuration as defined in the extension manifest.
-     * @param deprTypeCheck Callback for type validation for each value of the deprecated configuration.
+     * @param deprTypecheck Callback for type validation for each value of the deprecated configuration.
      * @param normalize Callback to normalize values of the deprecated configuration to the format of 
      *                  the new one when returning the `effectiveValue`. Furthermore, this callback
      *                  is used when migrating values from the deprecated configuration to the new one.
@@ -203,20 +203,20 @@ export class ConfigurationHandlerCompat<T, D> extends ConfigurationHandler<T> {
      */
     public constructor(private readonly args2: {
         name:          string,
-        typeCheck:     (t: any) => t is T,
+        typecheck:     (t: any) => t is T,
         deprName:      string,
-        deprTypeCheck: (d: any) => d is D,
+        deprTypecheck: (d: any) => d is D,
         normalize:     (d: D) => T
     }) {
         // The super class handles that of the new configuration
         super({
             name:      args2.name,
-            typeCheck: args2.typeCheck
+            typecheck: args2.typecheck
         });
         // We delegate the handling of the deprecated configuration to another `ConfigurationHandler`
         this.handlerToDepr = new ConfigurationHandler({
             name:      args2.deprName,
-            typeCheck: args2.deprTypeCheck
+            typecheck: args2.deprTypecheck
         });
     }
 

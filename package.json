@@ -30,7 +30,7 @@
             "title": "VSCode Configuration Handler Test Configurations",
             "properties": {
                 "@onlylys/vscode-configuration-handler.config": {
-                    "$comment": "This test configuration was inspired by `Leaper.detectedPairs`. Each element in the array must have exact length of 2. The exact JSON schema is not provided here.",
+                    "$comment": "This test configuration was inspired by `leaper.detectedPairs`. Each element in the array must have exact length of 2. The exact JSON schema is not provided here.",
                     "type": "array",
                     "default": [
                         "()",
@@ -44,7 +44,7 @@
                     "markdownDescription": "DO NOT USE. For tests only!"
                 },
                 "@onlylys/vscode-configuration-handler.deprConfig": {
-                    "$comment": "This test configuration was inspired by `Leaper.additionalTriggerPairs`. This configuration simulates a deprecated configuration.",
+                    "$comment": "This test configuration was inspired by `leaper.additionalTriggerPairs`. This configuration simulates a deprecated configuration.",
                     "type": "array",
                     "default": [
                         {

@@ -8,9 +8,6 @@ import { ValuesCompat, ValuesCompatUnsafe } from './values';
  * The goal of this class is to handle the situations where a configuration is superseded by a new
  * one but we still want to read values of the deprecated one when values for it are present. 
  * 
- * This class also can help move values from the deprecated configuration over to the new one via the
- * `migrate()` method.
- * 
  * Furthermore, in the constructor of this class, a `normalize()` callback must be provided to convert 
  * values of the deprecated configuration to the new format. This callback is used when calculating 
  * the `effectiveValue` (so that whenever we get the effective value we get a definite type. The
@@ -218,32 +215,6 @@ export class ConfigurationHandlerCompat<T, D> extends ConfigurationHandler<T> {
             name:      args2.deprName,
             typecheck: args2.deprTypecheck
         });
-    }
-
-    /**
-     * Migrate the global and workspace values of the deprecated configuration over to the new one, 
-     * but only ones which pass type checking.
-     * 
-     * Each value that passes type checking will be converted to the new format on move, with the
-     * conversion defined by the `normalize` callback provided in the constructor. After being moved, 
-     * the value will be `undefined` in its former site.
-     * 
-     * @return A promise that resolves when the migration is complete.
-     */
-    public async migrate(): Promise<void> {
-        // Get the (pre-normalized) values of the deprecated configuration from the delegated instance
-        const {
-            globalValue:          deprGlobalValuePre,
-            workspaceValue:       deprWorkspaceValuePre,
-        } = this.handlerToDepr.getUnsafe();
-        if (deprGlobalValuePre !== undefined) {
-            await this.setGlobalValue(this.args2.normalize(deprGlobalValuePre));
-            await this.setDeprGlobalValue(undefined);
-        }
-        if (deprWorkspaceValuePre !== undefined) {
-            await this.setWorkspaceValue(this.args2.normalize(deprWorkspaceValuePre));
-            await this.setDeprWorkspaceValue(undefined);
-        }
     }
 
     /** 

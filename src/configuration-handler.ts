@@ -36,8 +36,9 @@ export class ConfigurationHandler<T> {
      * https://code.visualstudio.com/api/references/vscode-api#WorkspaceConfiguration
      * 
      * All values will be typechecked before being returned. Values which fail typecheck or are not 
-     * present are returned as `undefined`. However, as mentioned above, the default value must be 
-     * defined and pass typecheck, otherwise this method will throw.
+     * present are returned as `undefined` and do not shadow values that have a lower priority. 
+     * However, the default value must be defined and pass typecheck, otherwise this method will 
+     * throw.
      * 
      * @throws `ConfigurationBadDefaultError` if the configuration is missing a default value or 
      *         fails typecheck.
@@ -51,7 +52,7 @@ export class ConfigurationHandler<T> {
         if (defaultValue === undefined) {
             throw new ConfigurationBadDefaultError(this.args.name);
         }
-        // Since the default value is defined, we can confidently calculate the effective value 
+        // Apply shadowing rules.
         const effectiveValue = (() => { 
             if (workspaceValue !== undefined) {
                 return workspaceValue;
@@ -73,26 +74,20 @@ export class ConfigurationHandler<T> {
      * Perform similar function as `get()` method with two differences:
      * 
      * 1. This method doesn't throw when the default value is `undefined`.
-     * 2. As a result of (1), no effective value is returned as there is no guaranteed default value 
-     *    to fallback to.
-     *
-     * For the above reasons, unless special need arises, `get()` is the method that you should be
-     * using. 
+     * 2. As a result of (1), this method cannot provide an effective value, as there is no 
+     *    guaranteed default value to fallback to.
      */
     public getUnsafe(): ValuesUnsafe<T> {
-        // Get the values of the configuration using VS Code's API
+        // Get the values of the configuration using VS Code's API.
         const section = workspace.getConfiguration(this.sectionName);
         const inspect = section.inspect<any>(this.childName);
-        /* I have no idea under what circumstances `inspect` is `undefined`. So I'll just throw a
-        generic `Error` here. */
+        // I have no idea what circumstances cause `inspect` to be `undefined`. So I'll just throw a
+        // generic error when it happens.
         if (!inspect) {
             throw new Error(`Unexpected error: Inspecting ${this.args.name} yields 'undefined'.`);
         }
-        // Typecheck the values
+        // Typecheck the values.
         const check = (value?: T) => this.args.typecheck(value) ? value : undefined;
-        const defaultValue   = check(inspect.defaultValue);
-        const globalValue    = check(inspect.globalValue);
-        const workspaceValue = check(inspect.workspaceValue);
         return {
             defaultValue,
             globalValue,
@@ -154,13 +149,12 @@ export class ConfigurationHandler<T> {
      * @throws `ConfigurationNameEmptyError` if `name` is empty.
      */
     public constructor(private readonly args: {
-        name:      string,
+        name: string,
         typecheck: (t: any) => t is T
     }) {
         if (args.name.length === 0) {
             throw new ConfigurationNameEmptyError();
         }
-        // We need to split the name to make it easier to access the configuration
         const { sectionName, childName } = splitName(args.name);
         this.sectionName = sectionName;
         this.childName   = childName;
@@ -176,8 +170,7 @@ export class ConfigurationHandler<T> {
  * of `a.b` and a child name of `c`. 
  * 
  * If there is no `.` in the full configuration name then the section name will be empty while the 
- * child name will equal the full configuration name. This is equivalent to taking the configuration
- * of the entire editor as the section.
+ * child name will equal the full configuration name. 
  */
 function splitName(fullName: string): { sectionName: string, childName: string } {
     const lastPeriod = fullName.lastIndexOf('.');

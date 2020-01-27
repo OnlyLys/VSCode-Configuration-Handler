@@ -15,17 +15,19 @@ const name = `@onlylys/vscode-configuration-handler.config`;
 
 /** 
  * This represents the type of the test configuration that we use when testing the handlers. This
- * configuration was taken from `leaper.detectedPairs`. Each element within this array should only
- * have an exact length of 2.
+ * configuration was taken from `leaper.detectedPairs` (`Leaper` is a VSCode extension written by
+ * OnlyLys).
+ * 
+ * Each element within this array should only have an exact length of 2.
  */
 type TestConfigurationFormat = string[];
 
-/** Type guard for `TestConfigurationFormat`. */
 function typecheck(value: any): value is TestConfigurationFormat {
-    return Array.isArray(value) && value.every((elem: any) => typeof elem === 'string' && elem.length === 2);
+    return Array.isArray(value) 
+        && value.every((elem: any) => typeof elem === 'string' && elem.length === 2);
 }
 
-/** Hanlder to our test configuration. */
+/** Handler to our test configuration. */
 const testHandler = new ConfigurationHandler({
     name,
     typecheck

@@ -1,5 +1,4 @@
-/* This file contains type aliases for structs that contain the return values from the configuration
-handler `get()` and `getUnsafe()` methods. */
+// Type aliases for the return values of the  `get()` and `getUnsafe()` methods. 
 
 export interface Values<T> {
     defaultValue:   T;

@@ -3,10 +3,10 @@ import { ConfigurationBadDefaultError } from './errors';
 import { ValuesCompat, ValuesCompatUnsafe } from './values';
 
 /**
- * An extension of the `ConfigurationHandler` class to additionally handle a deprecated configuration.
+ * An extension of the `ConfigurationHandler` class to further handle a deprecated configuration.
  * 
- * The goal of this class is to handle the situations where a configuration is superseded by a new
- * one but we still want to read values of the deprecated one when values for it are present. 
+ * The goal of this class is to handle situations where a configuration is superseded by a new one 
+ * but we still want to read values of the deprecated one when values for it are present. 
  * 
  * Furthermore, in the constructor of this class, a `normalize()` callback must be provided to convert 
  * values of the deprecated configuration to the new format. This callback is used when calculating 
@@ -55,7 +55,7 @@ export class ConfigurationHandlerCompat<T, D> extends ConfigurationHandler<T> {
      * 
      * All values will be typechecked before being returned. Values which fail typecheck or are not 
      * present are returned as `undefined`. However, just like in the base class, the default value 
-     * of the new configuration be defined and pass typecheck, otherwise this method will throw.
+     * of the new configuration must be defined and pass typecheck, otherwise this method will throw.
      * 
      * @throws `ConfigurationBadDefaultError` if the new configuration is missing a default value or 
      *         fails typecheck.

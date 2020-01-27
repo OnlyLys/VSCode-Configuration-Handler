@@ -1,6 +1,6 @@
 # README
 
-This repository contains utility classes to easily get and set the configurations of my VS Code extensions. 
+This repository contains utility classes for VS Code extensions to easily get and set configuration values.
 
 # Testing
 

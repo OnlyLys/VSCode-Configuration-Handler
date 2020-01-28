@@ -10,8 +10,7 @@ import { ValuesCompat, ValuesCompatUnsafe } from './values';
  * 
  * Furthermore, in the constructor of this class, a `normalize()` callback must be provided to convert 
  * values of the deprecated configuration to the new format. This callback is used when calculating 
- * the `effectiveValue` (so that whenever we get the effective value we get a definite type. The
- * `normalize()` callback is also used when migrating values via `migrate()`.
+ * the `effectiveValue` (so that whenever we get the effective value we get a definite type. 
  * 
  * Much like setting values in the base class, the deprecated configuration can also be set by the 
  * various methods prefixed with `setDepr`.
@@ -193,8 +192,7 @@ export class ConfigurationHandlerCompat<T, D> extends ConfigurationHandler<T> {
      * @param deprName Full name of the deprecated configuration as defined in the extension manifest.
      * @param deprTypecheck Callback for type validation for each value of the deprecated configuration.
      * @param normalize Callback to normalize values of the deprecated configuration to the format of 
-     *                  the new one when returning the `effectiveValue`. Furthermore, this callback
-     *                  is used when migrating values from the deprecated configuration to the new one.
+     *                  the new one when returning the `effectiveValue`. 
      * 
      * @throws `ConfigurationNameEmptyError` if either `name` or `deprName` is empty.
      */

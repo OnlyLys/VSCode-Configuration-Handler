@@ -5,11 +5,11 @@
 		},
 		{
 			"path": "workspace-2"
-		},
-		{
-			"path": "workspace-3"
 		}
 	],
 	"settings": {
+		"[c]": {
+		},
+		"@onlylys/vscode-validated-configuration-reader.forTestSetConfiguration": 3
 	}
 }

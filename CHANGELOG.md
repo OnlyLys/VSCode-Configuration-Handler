@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## 0.2.0 
+
+- Renamed extension to `validated-configuration-reader`. 
+- Removed ability to set or migrate values.
+- Add support for language specific configurations. 
+- Add support for workspace folder scope.
+- Allow user of the class to specify scoping when getting values.
+- Changed to new vscode test configuration.
+
 ## 0.1.0
 
 - Fix spelling for the test configuration's comments.

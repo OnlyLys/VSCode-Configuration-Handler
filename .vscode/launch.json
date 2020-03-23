@@ -6,14 +6,11 @@
 			"type": "extensionHost",
 			"request": "launch",
 			"runtimeExecutable": "${execPath}",
-			/* Even though we open a multi-root workspace here, as of 1.32 there is no way for us 
-			(as third party extensions) to use workspace folder scoped configurations. So I kind of 
-			wasted time figuring out how to set this up. But I'll keep it here for the future when
-			workspace folder scoped configurations are available I guess. */
 			"args": [
 				"${workspaceFolder}/.test-environment/multi.code-workspace",
 				"--extensionDevelopmentPath=${workspaceFolder}",
-				"--extensionTestsPath=${workspaceFolder}/out/test"
+				"--extensionTestsPath=${workspaceFolder}/out/test/suite/index",
+				"--disable-extensions"
 			],
 			"outFiles": [
 				"${workspaceFolder}/out/test/**/*.js"

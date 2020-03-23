@@ -5,11 +5,10 @@
 		},
 		{
 			"path": "workspace-2"
-		},
-		{
-			"path": "workspace-3"
 		}
 	],
 	"settings": {
+		"[c]": {
+		}
 	}
 }

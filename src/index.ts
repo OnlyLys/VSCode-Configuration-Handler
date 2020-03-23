@@ -1,4 +1,5 @@
-// Errors exposed for users of this package.
-export { ConfigurationHandler } from './configuration-handler';
-export { ConfigurationHandlerCompat } from './configuration-handler-compat';
-export { ConfigurationBadDefaultError, ConfigurationNameEmptyError } from './errors';
+// Export for users of this package.
+
+export { VCReader } from './vc-reader';
+export { VCDualReader } from './vc-dual-reader';
+export { NoGuaranteedEffectiveValueError, ConfigurationNameEmptyError } from './errors';

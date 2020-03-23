@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.2.1
+
+Fix dependency vulnerability.
+
 ## 0.2.0 
 
 Package renamed to `validated-configuration-reader`.

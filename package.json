@@ -1,7 +1,7 @@
 {
     "name": "@onlylys/vscode-validated-configuration-reader",
     "description": "Used to help my vscode extensions get validated configuration values.",
-    "version": "0.2.0",
+    "version": "0.2.2",
     "publisher": "OnlyLys",
     "author": {
         "name": "L.Y. Sim",
@@ -9,11 +9,11 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/OnlyLys/VSCode-Configuration-Handler.git"
+        "url": "https://github.com/OnlyLys/vscode-validated-configuration-reader.git"
     },
-    "homepage": "https://github.com/OnlyLys/VSCode-Configuration-Handler",
+    "homepage": "https://github.com/OnlyLys/vscode-validated-configuration-reader",
     "bugs": {
-        "url": "https://github.com/OnlyLys/VSCode-Configuration-Handler/issues"
+        "url": "https://github.com/OnlyLys/vscode-validated-configuration-reader/issues"
     },
     "license": "MIT",
     "main": "./out/index.js",

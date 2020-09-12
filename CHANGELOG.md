@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.2.3
+
+Fix dependency vulnerability.
+
 ## 0.2.2
 
 Fix package manifest version number and repository url. 

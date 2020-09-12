@@ -1,7 +1,7 @@
 {
     "name": "@onlylys/vscode-validated-configuration-reader",
     "description": "Used to help my vscode extensions get validated configuration values.",
-    "version": "0.2.3",
+    "version": "0.3.0",
     "publisher": "OnlyLys",
     "author": {
         "name": "L.Y. Sim",
@@ -133,7 +133,7 @@
         "compile": "tsc -p ./",
         "lint": "eslint src --ext ts",
         "watch": "tsc -watch -p ./",
-        "prepack": "npm run compile",
+        "prepack": "npm install && npm run compile",
         "pretest": "npm run compile && npm run lint",
         "test": "node ./out/test/run-test.js"
     },

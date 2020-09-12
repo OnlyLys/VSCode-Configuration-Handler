@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.3.0
+
+Execute `npm install` before packing package.
+
+Previously this wasn't done and made it impossible for this package to be 
+pulled and built by NPM.
+
 ## 0.2.3
 
 Fix dependency vulnerability.

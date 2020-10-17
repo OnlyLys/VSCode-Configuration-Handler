@@ -75,7 +75,7 @@ export class VCReader<T> {
         return _values as Values<T>;
     }
 
-    /** **For internal use only.** */
+    /** @internal */
     public _read(scope: ConfigurationScope | undefined): ValuesInternal<T> {
         const inspect = workspace.getConfiguration(this.section, scope).inspect<unknown>(this.child);
         // I have yet to encounter circumstances that cause `inspect` to be `undefined`. However I 

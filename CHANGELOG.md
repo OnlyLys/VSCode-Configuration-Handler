@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.4.0
+
+Make the `_read` method (which should have been internal in the first place) 
+internal.
+
 ## 0.3.0
 
 Execute `npm install` before packing package.

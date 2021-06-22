@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.5.0
+
+Update dev dependencies and upgrade the language version of the output Javascript. Also, change the npm `prepack` script to `prepare`.
+
 ## 0.4.0
 
 Make the `_read` method (which should have been internal in the first place) 

@@ -1,9 +1,12 @@
 # README
 
-This repository contains utility classes to help my extensions get typechecked configuration values.
+This repository contains utility classes to help my vscode extensions obtain 
+typechecked configuration values.
 
 # Testing
 
-There are two ways to perform tests:
- 1. Open the project in VS Code. Then select the `Run Tests` debug launch option.
- 1. Run `npm test` in the command line. This will automatically download VS Code and run the tests.
+To perform tests, open this project in vscode then select the `Run Tests` debug 
+launch option.
+
+Alternatively, tests can be run via the command line with `npm test` while in 
+the project's directory.

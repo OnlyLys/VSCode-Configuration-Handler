@@ -50,7 +50,7 @@ function assertDualValues<T, D>(actual: DualValues<T, D>, spec: VCDualReaderTest
 
 // -------------------------------------------------------------------------------------
 // Utilities to test `VCReader`.
-
+ 
 /**
  * Specifies a test for the `testVCReader` function.
  */
@@ -84,7 +84,7 @@ interface VCReaderTestSpec<T> {
 export async function testVCReader<T>(spec: VCReaderTestSpec<T>): Promise<void> {
     const reader = new VCReader(spec);
     await setConfiguration(spec.name, spec.scope, spec.userDefinable);
-    
+
     // If we expect that an effective value can't be found, then we expect `read` to throw.
     if (spec.expected.effectiveValue === undefined) {
         assert.throws(function () {
@@ -225,9 +225,15 @@ export async function testClearConfiguration(name: string, scope: ConfigurationS
     assert.deepStrictEqual(inspect.workspaceFolderLanguageValue, undefined);
 };
 
-export function assertThrowConstructDummyVCReader(name: string): void {
+/** 
+ * Construct a `VCReader` and assert that the constructor throws.
+ * 
+ * A dummy `validate` callback is passed to the constructor.
+ */
+export function assertVCReaderCtorThrows(name: string): void {
 
-    // Dummy callback.
+    // We use a dummy callback because we just want to know whether the constructor throws. This
+    // callbacks isn't used at all in the constructor so anything will do.
     const validate = (t: any): t is number => typeof t === 'number';
 
     assert.throws(
@@ -240,16 +246,18 @@ export function assertThrowConstructDummyVCReader(name: string): void {
     );
 }
 
-export function assertThrowConstructDummyVCDualReader(name: string, deprName: string): void {
-
-    // Dummy callback.
-    const validate = (t: any): t is number => typeof t === 'number';
-
-    // Dummy callback.
+/**
+ * Construct a `VCDualReader` and assert that the constructor throws.
+ * 
+ * Dummy `validate`, `deprValidate` and `normalize` callbacks are passed to the constructor.
+ */
+export function assertVCDualReaderCtorThrows(name: string, deprName: string): void {
+    
+    // We use dummy callbacks because we just want to know whether the constructor throws. These 
+    // callbacks aren't used at all in the constructor so anything will do.
+    const validate     = (t: any): t is number => typeof t === 'number';
     const deprValidate = (d: any): d is string => typeof d === 'string';
-
-    // Dummy callback.
-    const normalize = () => 10;
+    const normalize    = () => 10;
 
     assert.throws(
         function () {

@@ -1,6 +1,6 @@
 import * as path from 'path';
 import { workspace, TextDocument, Uri } from 'vscode';
-import { clearConfiguration, testSetConfiguration, testClearConfiguration, testVCReader, assertThrowConstructDummyVCReader, assertThrowConstructDummyVCDualReader, testVCDualReader } from './utilities';
+import { clearConfiguration, testSetConfiguration, testClearConfiguration, testVCReader, assertVCReaderCtorThrows, assertVCDualReaderCtorThrows, testVCDualReader } from './utilities';
 
 /** 
  * Text document in which our tests are scoped to.
@@ -324,11 +324,11 @@ describe('`validated-configuration-reader` Tests (all scopes except default lang
         describe('# Constructor safety checks', function () {
 
             it('Throw when empty name', function () {
-                assertThrowConstructDummyVCReader('');
+                assertVCReaderCtorThrows('');
             });
         
             it('Throw when whitespace only name', function () {
-                assertThrowConstructDummyVCReader('              ');
+                assertVCReaderCtorThrows('              ');
             });
 
         });
@@ -1287,29 +1287,29 @@ describe('`validated-configuration-reader` Tests (all scopes except default lang
 
         describe('# Constructor safety checks', function () {
 
-            it('Throw when empty name for newer configuration', function () {
-                assertThrowConstructDummyVCDualReader(
+            it('Throw when empty name for the new configuration', function () {
+                assertVCDualReaderCtorThrows(
                     '',
                     'deprDummy'
                 );
             });
 
-            it('Throw when whitespace only name for newer configuration', function () {
-                assertThrowConstructDummyVCDualReader(
+            it('Throw when whitespace only name for the new configuration', function () {
+                assertVCDualReaderCtorThrows(
                     '              ',
                     'deprDummy'
                 );
             });
 
             it('Throw when empty name for deprecated configuration', function () {
-                assertThrowConstructDummyVCDualReader(
+                assertVCDualReaderCtorThrows(
                     'dummy',
                     '',
                 );
             });
 
             it('Throw when whitespace only for name of deprecated configuration', function () {
-                assertThrowConstructDummyVCDualReader(
+                assertVCDualReaderCtorThrows(
                     'dummy',
                     '                   ',
                 );

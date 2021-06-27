@@ -81,6 +81,7 @@ const deprValidate = (d: unknown): d is { open: string, close: string }[] => {
     return Array.isArray(d) 
         && d.every(inner => 
             typeof inner === 'object'
+                && inner !== null
                 && Reflect.ownKeys(inner).length === 2
                 && typeof inner.open  === 'string' 
                 && typeof inner.close === 'string'

@@ -7,7 +7,7 @@ import { clearConfiguration, testSetConfiguration, testClearConfiguration, testV
  */
 let scope: Thenable<TextDocument>;
 
-// Get a reference to the text document where we conduct our tests.
+// Initialize the `scope` pointer.
 //
 // We will be using the `text.c` file in the first workspace.
 if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
@@ -24,40 +24,107 @@ if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
  */
 const section = '@onlylys/vscode-validated-configuration-reader';
 
+/**
+ * The full name of the new configuration with a good default value.
+ */
+ const goodName = `${section}.goodDefault`;
+
+/**
+ * The full name of the new configuration with a bad default value.
+ */
+const badName = `${section}.badDefault`;
+
+/**
+ * The full name of the deprecated configuration with a good default value.
+ */
+const deprGoodName = `${section}.deprGoodDefault`;
+
+/**
+ * The full name of the deprecated configuration with a bad default value.
+ */
+const deprBadName = `${section}.deprBadDefault`;
+
+/**
+ * Configuration used to test the `setConfiguration` and `clearConfiguration` utility functions. 
+ */
+const testSetConfigurationName = `${section}.forTestSetConfiguration`;
+
+/** 
+ * The expected default value of the new configuration with a good default value. 
+ */
+const expectedGoodDefaultValue: string[] = [ "()", "[]", "{}", "<>", "``", "''", "\"\"" ];
+
+/**
+ * The expected default value of the deprecated configuration with a good default value.
+ */
+const expectedGoodDeprDefaultValue: { open: string, close: string }[] = [
+    { open: "(",  close: ")" },
+    { open: "[",  close: "]" },
+    { open: "{",  close: "}" },
+    { open: "<",  close: ">" },
+    { open: "`",  close: "`" },
+    { open: "'",  close: "'" },
+    { open: "\"", close: "\"" }
+];
+
+/** 
+ * Callback to validate the new configuration.
+ */
+const validate = (t: unknown): t is string[] => {
+    return Array.isArray(t) && t.every(pair => typeof pair === 'string' && pair.length === 2);
+};
+
+/**
+ * Callback to validate the deprecated configuration.
+ */
+const deprValidate = (d: unknown): d is { open: string, close: string }[] => {
+    return Array.isArray(d) 
+        && d.every(inner => 
+            typeof inner === 'object'
+                && Reflect.ownKeys(inner).length === 2
+                && typeof inner.open  === 'string' 
+                && typeof inner.close === 'string'
+                && inner.open.length  === 1
+                && inner.close.length === 1
+        );
+};
+
+/**
+ * Callback to transform values of the deprecated configuration to the type of the new configuration.
+ */
+const normalize = (d: { open: string, close: string }[]): string[] => {
+    return d.map(({ open, close }) => `${open}${close}` );
+};
+
 // Test entry point.
+//
+// To test this project, we will be running this package as a vscode extension to see if the readers
+// defined in this package can correctly read the configuration values. We will also be using the
+// vscode API to modify configuration values along the way in order to perform more comprehensive 
+// tests.
 describe('`validated-configuration-reader` Tests (all scopes except language-specific default tested)', function () {
 
-    // -------------------------------------
-    // VCReader
-
-    // The default value of the new configuration with a good default value.
-    const expectedGoodDefaultValue: string[] = [ "()", "[]", "{}", "<>", "``", "''", "\"\"" ];
-
-    // Callback to validate the new configuration and its variants.
-    const validate = (t: unknown): t is string[] => {
-        return Array.isArray(t) && t.every(pair => typeof pair === 'string' && pair.length === 2);
-    };
-
-    const goodName = `${section}.goodDefault`;
-    const badName  = `${section}.badDefault`;
-
-    // We test `VCReader` with two variants of the same configuration, one with a good default
-    // value and another with a bad default value. These configurations have the names:
+    // `VCReader` tests.
+    //
+    // We test `VCReader` with two variants of the same configuration, one with a good default value 
+    // and another with a bad default value. These configurations have the names:
     // 
     // - `@onlylys/vscode-validated-configuration-reader.goodDefault`
     // - `@onlylys/vscode-validated-configuration-reader.badDefault`
     //
     // Notice that there is no variant for no default value. That is because if a default value is
-    // not specified n the package manifest, vscode will implicitly provide a default value based on
-    //  the declared type of the configuration. For instance, for a config that was declared as 
-    // `array` type, the implicit default value is the empty array `[]`. 
+    // not specified in the package manifest, vscode will implicitly provide a default value based 
+    // on the declared type of the configuration. For instance, for a configuration that was declared 
+    // an `array` type, the implicit default value is the empty array `[]`. 
     // 
-    // Note that we can't test for variations in the language based default value since vscode does 
-    // not yet (at least as of 1.43.0) allow third party extensions to define them. 
+    // Note that we do not test the language based default value (`defaultLanguageValue`) since 
+    // vscode does not yet (at least as of 1.57.1) allow extensions to provide default values for
+    // third party configurations (i.e. configurations defined by extensions, such as the ones we
+    // are using here for testing). 
     //
     // The values used here for the tests are rather arbitrary, and is mostly based on what the 
     // author thinks will result in a more comprehensive test.
-    describe('VCReader' , function() {
+    describe('VCReader', function() {
 
         it('A - Good default only', async function () {
             await testVCReader({
@@ -333,38 +400,9 @@ describe('`validated-configuration-reader` Tests (all scopes except language-spe
 
     });
 
-    // -------------------------------------
-    // VCDualReader
-
-    // The expected default value of the deprecated configuration with a good default value.
-    const expectedGoodDeprDefaultValue: { open: string, close: string }[] = [
-        { open: "(",  close: ")" },
-        { open: "[",  close: "]" },
-        { open: "{",  close: "}" },
-        { open: "<",  close: ">" },
-        { open: "`",  close: "`" },
-        { open: "'",  close: "'" },
-        { open: "\"", close: "\"" }
-    ];
-
-    const deprValidate = (d: unknown): d is { open: string, close: string }[] => {
-        return Array.isArray(d) 
-            && d.every(inner => 
-                typeof inner === 'object'
-                    && Reflect.ownKeys(inner).length === 2
-                    && typeof inner.open  === 'string' 
-                    && typeof inner.close === 'string'
-                    && inner.open.length  === 1
-                    && inner.close.length === 1
-            );
-    };
-    const normalize = (d: { open: string, close: string }[]): string[] => {
-        return d.map(({ open, close }) => `${open}${close}` );
-    };
-    const deprGoodName = `${section}.deprGoodDefault`;
-    const deprBadName  = `${section}.deprBadDefault`;
-
-    // We test `VCDualReader` with three variants of a new configuration, one with a good default 
+    // `VCDualReader` tests.
+    //
+    // We test `VCDualReader` with two variants of a new configuration, one with a good default 
     // value and another with a bad default value. Furthermore we use two corresponding variants of 
     // a deprecated configuration. In total we have:
     // 
@@ -373,8 +411,9 @@ describe('`validated-configuration-reader` Tests (all scopes except language-spe
     // - `@onlylys/vscode-validated-configuration-reader.deprGoodDefault`
     // - `@onlylys/vscode-validated-configuration-reader.deprBadDefault`
     //
-    // For similar reasons to the test for `VCReader`, we cannot test the `defaultLanguageValue` for 
-    // both the new and deprecated configurations. 
+    // Similar to the tests for `VCReader`, we do not have configuration variants for no default 
+    // values. Furthermore, we do not test the language based default values for both the new and 
+    // deprecated configurations for reasons explained in the tests for `VCReader`.
     describe('VCDualReader' , function() {
 
         it('A - Good default, good depr default', async function () {
@@ -1317,12 +1356,7 @@ describe('`validated-configuration-reader` Tests (all scopes except language-spe
 
     });
 
-    // -------------------------------------
-    // Utilities
-
-    // Dummy configuration to test the `setConfiguration` and `clearConfiguration` functions. 
-    const testSetConfigurationName = `${section}.forTestSetConfiguration`;
-
+    // Utilities Tests
     describe('Utilities', function() {
         
         it('setConfiguration', async function () {
@@ -1335,9 +1369,7 @@ describe('`validated-configuration-reader` Tests (all scopes except language-spe
 
     });
 
-    // -------------------------------------
-    // Epilogue
-
+    // Cleanup
     describe('Epilogue', function () {
 
         it('Clear all test configuration values', async function () {

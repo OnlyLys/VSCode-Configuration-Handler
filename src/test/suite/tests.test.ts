@@ -25,7 +25,7 @@ if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
 const section = '@onlylys/vscode-validated-configuration-reader';
 
 // Test entry point.
-describe('`validated-configuration-reader` Tests (all scopes except default language tested)', function () {
+describe('`validated-configuration-reader` Tests (all scopes except language-specific default tested)', function () {
 
     // -------------------------------------
     // VCReader

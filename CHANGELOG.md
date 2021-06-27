@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.5.2
+
+Minor code update.
+
 ## 0.5.1
 
 Improve API documentation.

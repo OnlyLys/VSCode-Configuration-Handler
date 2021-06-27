@@ -29,7 +29,9 @@ export interface DualValues<T, D> extends Values<T> {
     deprWorkspaceFolderLanguageValue: D | undefined;
 }
 
-/** Constants representing which scope the effective value of a configuration comes from. */
+/** 
+ * Which scope the effective value of a configuration comes from. 
+ */
 export enum EffectiveScope {
     NONE                      = 0,
     DEFAULT                   = 1,

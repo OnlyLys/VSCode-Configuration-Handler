@@ -19,7 +19,7 @@ async function main() {
 		// The path to the workspace we shall be running our tests in.
 		const testWorkspacePath = path.resolve(__dirname, '../../.test-environment/multi.code-workspace');
 
-		// Download VS Code, unzip it and run the integration test. Pass
+		// Download VS Code, unzip it and run the integration test.
 		await runTests({ 
 			extensionDevelopmentPath, 
 			extensionTestsPath,

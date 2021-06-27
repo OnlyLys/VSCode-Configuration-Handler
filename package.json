@@ -121,7 +121,7 @@
                     "scope": "language-overridable"
                 },
                 "@onlylys/vscode-validated-configuration-reader.forTestSetConfiguration": {
-                    "$comment": "This is exlucisvely for the test function `testSetConfiguration` to use",
+                    "$comment": "This is exclusively for the test function `testSetConfiguration` to use",
                     "type": "number",
                     "default": 1,
                     "scope": "language-overridable"

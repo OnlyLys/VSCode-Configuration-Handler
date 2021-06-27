@@ -2,20 +2,26 @@ import * as path from 'path';
 import { workspace, TextDocument, Uri } from 'vscode';
 import { clearConfiguration, testSetConfiguration, testClearConfiguration, testVCReader, assertThrowConstructDummyVCReader, assertThrowConstructDummyVCDualReader, testVCDualReader } from './utilities';
 
-// Text document in which we scope to for the purposes of our tests. 
+/** 
+ * Text document in which our tests are scoped to.
+ */
 let scope: Thenable<TextDocument>;
 
-// Get a reference to the text document within the workspace where we conduct our tests.
+// Get a reference to the text document where we conduct our tests.
+//
+// We will be using the `text.c` file in the first workspace.
 if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
-    // We only use the text documents within `workspace-1` (the first workspace) for our 
-    // tests here.
     const workspace1 = workspace.workspaceFolders[0];
     scope = workspace.openTextDocument(Uri.file(path.join(workspace1.uri.fsPath, 'text.c')));
 } else {
     throw new Error('Cannot open test environment!');
 }
 
-// All the test configurations will be prefixed with this. 
+/** 
+ * The [section name] of the configurations defined by this extension.
+ * 
+ * [section name]: https://code.visualstudio.com/api/references/vscode-api#workspace.getConfiguration
+ */
 const section = '@onlylys/vscode-validated-configuration-reader';
 
 // -------------------------------------------------------------------------------------
@@ -26,10 +32,10 @@ describe('`validated-configuration-reader` Tests (all scopes except default lang
     // -------------------------------------
     // VCReader
 
-    // The default value of the newer configuration with a good default value.
+    // The default value of the new configuration with a good default value.
     const expectedGoodDefaultValue: string[] = [ "()", "[]", "{}", "<>", "``", "''", "\"\"" ];
 
-    // Callback to validate the newer configuration and its variants.
+    // Callback to validate the new configuration and its variants.
     const validate = (t: unknown): t is string[] => {
         return Array.isArray(t) && t.every(pair => typeof pair === 'string' && pair.length === 2);
     };
@@ -330,9 +336,9 @@ describe('`validated-configuration-reader` Tests (all scopes except default lang
     });
 
     // -------------------------------------
-    // VCReaderCompat
+    // VCDualReader
 
-    // The default value of the deprecated configuration with a good default value.
+    // The expected default value of the deprecated configuration with a good default value.
     const expectedGoodDeprDefaultValue: { open: string, close: string }[] = [
         { open: "(",  close: ")" },
         { open: "[",  close: "]" },
@@ -343,7 +349,6 @@ describe('`validated-configuration-reader` Tests (all scopes except default lang
         { open: "\"", close: "\"" }
     ];
 
-    // Callback to validate the deprecated configuration and its variants.
     const deprValidate = (d: unknown): d is { open: string, close: string }[] => {
         return Array.isArray(d) 
             && d.every(inner => 
@@ -355,17 +360,13 @@ describe('`validated-configuration-reader` Tests (all scopes except default lang
                     && inner.close.length === 1
             );
     };
-
-    // Convert configurations of the older type to that of the newer type. Strictly only used when
-    // calculating the effective value. 
     const normalize = (d: { open: string, close: string }[]): string[] => {
         return d.map(({ open, close }) => `${open}${close}` );
     };
-
     const deprGoodName = `${section}.deprGoodDefault`;
     const deprBadName  = `${section}.deprBadDefault`;
 
-    // We test `VCDualReader` with three variants of a newer configuration, one with a good default 
+    // We test `VCDualReader` with three variants of a new configuration, one with a good default 
     // value and another with a bad default value. Furthermore we use two corresponding variants of 
     // a deprecated configuration. In total we have:
     // 
@@ -375,7 +376,7 @@ describe('`validated-configuration-reader` Tests (all scopes except default lang
     // - `@onlylys/vscode-validated-configuration-reader.deprBadDefault`
     //
     // For similar reasons to the test for `VCReader`, we cannot test the `defaultLanguageValue` for 
-    // both the newer and deprecated configurations. 
+    // both the new and deprecated configurations. 
     describe('VCDualReader' , function() {
 
         it('A - Good default, good depr default', async function () {

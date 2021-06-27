@@ -1,4 +1,4 @@
-// Export for users of this package.
+// Stuff exposed to users of this package.
 
 export { VCReader } from './vc-reader';
 export { VCDualReader } from './vc-dual-reader';

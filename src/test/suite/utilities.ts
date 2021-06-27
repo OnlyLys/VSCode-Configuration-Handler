@@ -34,11 +34,10 @@ function assertValues<T>(actual: Values<T>, spec: VCReaderTestSpec<T>): void {
 
 function assertDualValues<T, D>(actual: DualValues<T, D>, spec: VCDualReaderTestSpec<T, D>): void {
 
-    // This call settles the assertion of all values of the newer configuration, and the effective
-    // value.
+    // Assert all values of the new configuration and the effective value.
     assertValues(actual, spec);
 
-    // What's left is to check the values of the deprecated configuration.
+    // Assert the values of the deprecated configuration.
     assert.deepStrictEqual(actual.deprDefaultValue,         spec.deprExpected.defaultValue);
     assert.deepStrictEqual(actual.deprDefaultLanguageValue, spec.deprExpected.defaultLanguageValue);
     unwrapAssert(actual.deprGlobalValue,                    spec.deprUserDefinable.global);
@@ -50,18 +49,16 @@ function assertDualValues<T, D>(actual: DualValues<T, D>, spec: VCDualReaderTest
 }
 
 // -------------------------------------------------------------------------------------
-// VC READER
+// Utilities to test `VCReader`.
 
+/**
+ * Specifies a test for the `testVCReader` function.
+ */
 interface VCReaderTestSpec<T> {
-
     name: string;
-    
     scope: ConfigurationScope;
-
     validate: (t: unknown) => t is T;
-
     expected: {
-
         defaultValue: T | undefined;
 
         /**
@@ -74,21 +71,20 @@ interface VCReaderTestSpec<T> {
          * However, this property will still be left here in case vscode does allow that to happen 
          * in the future.
          */
-
         defaultLanguageValue: undefined;
-
         effectiveValue: T | undefined;
-
     }
 
-    /** Values which we set then read back via `VCReader`. */
+    /** 
+     * Values which we set then read back via `VCReader`. 
+     */
     userDefinable: UserDefinable<T>;
-
 }
 
 export async function testVCReader<T>(spec: VCReaderTestSpec<T>): Promise<void> {
     const reader = new VCReader(spec);
     await setConfiguration(spec.name, spec.scope, spec.userDefinable);
+    
     // If we expect that an effective value can't be found, then we expect `read` to throw.
     if (spec.expected.effectiveValue === undefined) {
         assert.throws(function () {
@@ -100,39 +96,35 @@ export async function testVCReader<T>(spec: VCReaderTestSpec<T>): Promise<void> 
 }
 
 // -------------------------------------------------------------------------------------
-// VC DUAL READER 
+// Utilities to test `VCDualReader`.
 
+/**
+ * Specifies a test for the `testVCDualReader` function.
+ */
 interface VCDualReaderTestSpec<T, D> extends VCReaderTestSpec<T> {
-
     deprName: string;
-
     deprValidate: (d: unknown) => d is D;
-
     normalize: (d: D) => T;
-
     deprExpected: {
-
         defaultValue: D | undefined;
 
         /** 
-         * This is `undefined` because vscode does not allow third party extensions to define any 
-         * configurations with language based default values.
-         * 
-         * For more information, see `VCReaderTestSpec`.
+         * See `VCReaderTestSpec` for why this is `undefined`. 
          */
         defaultLanguageValue: undefined;
-
     }
 
-    /** For the deprecated configuration. */
+    /** 
+     * For the deprecated configuration. 
+     */
     deprUserDefinable: UserDefinable<D>;
-
 }
 
 export async function testVCDualReader<T, D>(spec: VCDualReaderTestSpec<T, D>): Promise<void> {
     const reader = new VCDualReader(spec);
     await setConfiguration(spec.name,     spec.scope, spec.userDefinable);
     await setConfiguration(spec.deprName, spec.scope, spec.deprUserDefinable);
+    
     // If we expect that an effective value can't be found, then we expect `read` to throw.
     if (spec.expected.effectiveValue === undefined) {
         assert.throws(function () {
@@ -144,7 +136,7 @@ export async function testVCDualReader<T, D>(spec: VCDualReaderTestSpec<T, D>): 
 }
 
 // -------------------------------------------------------------------------------------
-// UTILITIES TO SET AND CLEAR CONFIGURATION VALUES
+// Utilities to set and clear configuration values.
 
 export async function setConfiguration<T>(
     name: string,
@@ -162,6 +154,9 @@ export async function setConfiguration<T>(
     await c.update(child, input.workspaceFolderLanguage.value, ConfigurationTarget.WorkspaceFolder, true);
 }
 
+/** 
+ * Test the `setConfiguration` function. 
+ */
 export async function testSetConfiguration(name: string, scope: ConfigurationScope): Promise<void> {
 
     const { section, child } = splitName(name);
@@ -201,6 +196,9 @@ export async function clearConfiguration(name: string, scope: ConfigurationScope
     });
 }
 
+/** 
+ * Test the `clearConfiguration` function.
+ */
 export async function testClearConfiguration(name: string, scope: ConfigurationScope): Promise<void> {
 
     const { section, child } = splitName(name);

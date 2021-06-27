@@ -4,69 +4,84 @@ import { ConfigurationScope } from 'vscode';
 import { NoGuaranteedEffectiveValueError } from './errors';
 
 /**
- * An expansion of the `VCReader` class to further yield values from a deprecated configuration.
+ * Configuration reader that reads and validates values from a new and deprecated configuration.
  * 
- * The goal of this class is to handle situations where a configuration is superseded by a newer one 
- * but we still want to read values of the deprecated one as well. 
- * 
- * Just like in the base `VCReader` class, values obtained from the deprecated configuration will
- * be validated first.
+ * This class is used to handle situations where a configuration has been superseded but we still 
+ * want to read the deprecated configuration as well. See also the base `VCReader` class for why we
+ * prefer to read configuration values through this class instead of just using the raw vscode API.
  */
 export class VCDualReader<T, D> extends VCReader<T> {
     
-    /** Instance pointing to the deprecated configuration. */
+    /** 
+     * Reader for the deprecated configuration. 
+     */
     private readonly deprReader: VCReader<D>;
 
     /** 
-     * Get the validated configuration values for both the newer and deprecated configurations. In
-     * specific the following values are returned:
+     * Get the following validated configuration values for the new and deprecated configurations:
      * 
-     *   1.  **Deprecated** Default                            (`deprDefaultValue`)
-     *   2.  Default                                           (`defaultValue`)
-     *   3.  **Deprecated** Global                             (`deprGlobalValue`)
-     *   4.  Global                                            (`globalValue`)
-     *   5.  **Deprecated** Workspace                          (`deprWorkspaceValue`) 
-     *   6.  Workspace                                         (`workspaceValue`) 
-     *   7.  **Deprecated** Workspace Folder                   (`deprWorkspaceFolderValue`)
-     *   8.  Workspace Folder                                  (`workspaceFolderValue`)
-     *   9.  **Deprecated** Language Specific Default          (`deprDefaultLanguageValue`)
-     *   10. Language Specific Default                         (`defaultLanguageValue`)
-     *   11. **Deprecated** Language Specific Global           (`deprGlobalLanguageValue`) 
-     *   12. Language Specific Global                          (`globalLanguageValue`) 
-     *   13. **Deprecated** Language Specific Workspace        (`deprWorkspaceLanguageValue`)
-     *   14. Language Specific Workspace                       (`workspaceLanguageValue`)
-     *   15. **Deprecated** Language Specific Workspace Folder (`deprWorkspaceFolderLanguageValue`)
-     *   16. Language Specific Workspace Folder                (`workspaceFolderLanguageValue`)
+     *   1.  Default of Deprecated                            (`deprDefaultValue`)
+     *   2.  Default                                          (`defaultValue`)
+     *   3.  Global of Deprecated                             (`deprGlobalValue`)
+     *   4.  Global                                           (`globalValue`)
+     *   5.  Workspace of Deprecated                          (`deprWorkspaceValue`) 
+     *   6.  Workspace                                        (`workspaceValue`) 
+     *   7.  Workspace Folder of Deprecated                   (`deprWorkspaceFolderValue`)
+     *   8.  Workspace Folder                                 (`workspaceFolderValue`)
+     *   9.  Language Specific Default of Deprecated          (`deprDefaultLanguageValue`)
+     *   10. Language Specific Default                        (`defaultLanguageValue`)
+     *   11. Language Specific Global of Deprecated           (`deprGlobalLanguageValue`) 
+     *   12. Language Specific Global                         (`globalLanguageValue`) 
+     *   13. Language Specific Workspace of Deprecated        (`deprWorkspaceLanguageValue`)
+     *   14. Language Specific Workspace                      (`workspaceLanguageValue`)
+     *   15. Language Specific Workspace Folder of Deprecated (`deprWorkspaceFolderLanguageValue`)
+     *   16. Language Specific Workspace Folder               (`workspaceFolderLanguageValue`)
      * 
-     * All values will be validated by their respective validation callbacks as provided in the
-     * constructor of this class.
+     * The meaning of each value is explained [here]. Values whose names are suffixed with 'of 
+     * Deprecated' are configuration values of the deprecated configuration. The configuration values 
+     * of the new and deprecated configurations are respectively validated with the `validate` and 
+     * `deprValidate` callbacks specified in the constructor. Values which fail validation or are 
+     * not defined are returned as `undefined`.
      * 
-     * Similar to the `read` method in the base class, an effective value will be calculated. Here
-     * the effective value is the last value in the list above that both exists and is valid. If 
-     * a deprecated configuration value is the effective value, it will be converted to the type of 
-     * the newer configuration via the `normalize` callback provided in the constructor. 
+     * Along with the various configuration values listed above, the `effectiveValue` is also 
+     * returned. The effective value is the last in the list above that is defined and valid. The 
+     * effective value is guaranteed to be a valid value, otherwise an error will be thrown.
      * 
-     * For more information (including an explanation on what the `scope` parameter is) please see 
-     * the `read` method of the base `VCReader` class.
+     * [here]: https://code.visualstudio.com/api/references/vscode-api#WorkspaceConfiguration
      * 
-     * @throws Just like in the `read` method of `Values`, this method will throw if an effective
-     *         cannot be found. 
+     * @param scope This parameter determines from which perspective the configuration is read from.
+     *              For instance, in a multi-root workspace, providing a `scope` argument to a
+     *              workspace X will cause this method to return configuration values relative to 
+     *              workspace X only.
+     * 
+     *              If no `scope` value is provided, the default scope will be used, which is usually 
+     *              the active text editor. When there is no active text editor, the default scope 
+     *              will be the workspace in a single workspace environment or the root workspace in 
+     *              a multi-root workspace. However, the exact way the default scope is determined 
+     *              is not really made clear by vscode's API.
+     * 
+     * @throws `NoGuaranteedEffectiveValue` if an effective value cannot be calcualted. 
      */
     public read(scope?: ConfigurationScope): DualValues<T, D> {
         const newer = super._read(scope);
         const depr  = this.deprReader._read(scope);
         let effectiveValue: T | undefined;
+        
         // The newer configuration always takes precedence in situations where the scopes are tied.
         if (newer.effectiveScope >= depr.effectiveScope) {
             effectiveValue = newer.effectiveValue;
         } else if (depr.effectiveValue !== undefined) {
             effectiveValue = this.args2.normalize(depr.effectiveValue);
         } else {
-            // This branch is unreachable because the minimum value for `EffectiveScope` is `NONE`.
-            // Thus if `depr.effectiveScope` is greater than `newer.effectiveScope`, then its 
-            // minimum possible value would be `DEFAULT`. This implies that there is a valid value
-            // for the deprecated configuration in some scope. Thus `depr.effectiveValue` cannot be 
-            // `undefined`.
+
+            // To get here, it must be true that:
+            //  
+            //   1. `newer.effectiveScope` < `depr.effectiveScope`.
+            //   2. `depr.effectiveValue` is `undefined`.
+            //
+            // But 1 implies that `depr.effectiveScope` > `EffectiveScope.NONE`, which then implies 
+            // that `depr.effectiveValue` is defined. That contradicts 2, thus this branch is 
+            // unreachable.
             throw new Error("Unreachable!");
         }
         if (effectiveValue === undefined) {
@@ -90,16 +105,15 @@ export class VCDualReader<T, D> extends VCReader<T> {
     }
 
     /**
-     * Register a validated reader that simultaneously reads values from a newer and a deprecated 
+     * Register a validating reader that simultaneously reads values from a new and a deprecated 
      * configuration.
      * 
-     * @param name  Full name of the newer configuration.
-     * @param validate Callback used to validate values of the newer configuration.
+     * @param name  Full name of the new configuration.
+     * @param validate Callback used to validate values of the new configuration.
      * @param deprName Full name of the deprecated configuration.
      * @param deprValidate Callback used to validate values of the deprecated configuration.
      * @param normalize Callback to transform values of the deprecated configuration to the type of 
-     *                  the newer one when calculating the `effectiveValue`. This is done so that
-     *                  using the effective value is much more convenient. 
+     *                  the new configuration.
      * 
      * @throws `ConfigurationNameEmptyError` if either `name` or `deprName` is empty.
      */
@@ -110,12 +124,14 @@ export class VCDualReader<T, D> extends VCReader<T> {
         deprValidate: (d: unknown) => d is D,
         normalize:    (d: D) => T
     }) {
-        // Super class instance handles the newer configuration.
+
+        // Super class instance handles the new configuration.
         super({
             name:     args2.name,
             validate: args2.validate
         });
-        // Deprecated configuration is handled by a delegated instance.
+
+        // Another reader handles the deprecated configuration.
         this.deprReader = new VCReader({
             name:     args2.deprName,
             validate: args2.deprValidate

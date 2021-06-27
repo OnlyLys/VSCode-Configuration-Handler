@@ -4,12 +4,18 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"type": "npm",
-			"script": "pretest",
-			"group": "none",
+            "label": "npm: pretest",
+            "type": "npm",
+            "script": "pretest",
+            "problemMatcher": [
+                "$eslint-stylish",
+                "$tsc",
+            ],
+            "isBackground": false,
             "presentation": {
-                "reveal": "never",
-            }
+                "reveal": "always"
+            },
+            "group": "build"
 		}
 	]
 }

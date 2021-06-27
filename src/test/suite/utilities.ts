@@ -234,7 +234,7 @@ export function assertVCReaderCtorThrows(name: string): void {
 
     // We use a dummy callback because we just want to know whether the constructor throws. This
     // callback isn't called at all in the constructor so anything will do.
-    const validate = (t: any): t is number => typeof t === 'number';
+    const validate = (t: unknown): t is number => typeof t === 'number';
 
     assert.throws(
         function () {
@@ -255,8 +255,8 @@ export function assertVCDualReaderCtorThrows(name: string, deprName: string): vo
     
     // We use dummy callbacks because we just want to know whether the constructor throws. These 
     // callbacks aren't called at all in the constructor so anything will do.
-    const validate     = (t: any): t is number => typeof t === 'number';
-    const deprValidate = (d: any): d is string => typeof d === 'string';
+    const validate     = (t: unknown): t is number => typeof t === 'number';
+    const deprValidate = (d: unknown): d is string => typeof d === 'string';
     const normalize    = () => 10;
 
     assert.throws(

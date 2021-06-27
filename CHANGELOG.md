@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.5.1
+
+Improve API documentation.
+
 ## 0.5.0
 
 Update dev dependencies and upgrade the language version of the output Javascript. Also, change the npm `prepack` script to `prepare`.

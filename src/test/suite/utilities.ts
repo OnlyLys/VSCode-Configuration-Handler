@@ -124,7 +124,7 @@ export async function testVCDualReader<T, D>(spec: VCDualReaderTestSpec<T, D>): 
     const reader = new VCDualReader(spec);
     await setConfiguration(spec.name,     spec.scope, spec.userDefinable);
     await setConfiguration(spec.deprName, spec.scope, spec.deprUserDefinable);
-    
+
     // If we expect that an effective value can't be found, then we expect `read` to throw.
     if (spec.expected.effectiveValue === undefined) {
         assert.throws(function () {
@@ -233,7 +233,7 @@ export async function testClearConfiguration(name: string, scope: ConfigurationS
 export function assertVCReaderCtorThrows(name: string): void {
 
     // We use a dummy callback because we just want to know whether the constructor throws. This
-    // callbacks isn't used at all in the constructor so anything will do.
+    // callback isn't called at all in the constructor so anything will do.
     const validate = (t: any): t is number => typeof t === 'number';
 
     assert.throws(
@@ -254,7 +254,7 @@ export function assertVCReaderCtorThrows(name: string): void {
 export function assertVCDualReaderCtorThrows(name: string, deprName: string): void {
     
     // We use dummy callbacks because we just want to know whether the constructor throws. These 
-    // callbacks aren't used at all in the constructor so anything will do.
+    // callbacks aren't called at all in the constructor so anything will do.
     const validate     = (t: any): t is number => typeof t === 'number';
     const deprValidate = (d: any): d is string => typeof d === 'string';
     const normalize    = () => 10;

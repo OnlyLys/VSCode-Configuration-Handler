@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.6.0
+
+Revamp the code and documentation. Furthermore, add ability to transform the
+effective value.
+
 ## 0.5.2
 
 Minor code update.

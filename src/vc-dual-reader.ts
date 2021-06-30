@@ -1,7 +1,6 @@
-import { VCReader } from './vc-reader';
-import { DualValues } from './values';
+import { VCReader, ValuesPartial, VCReaderCtorParams } from './vc-reader';
 import { ConfigurationScope } from 'vscode';
-import { NoGuaranteedEffectiveValueError } from './errors';
+import { NoEffectiveValueError } from './errors';
 
 /**
  * Configuration reader that reads and validates values from a new and deprecated configuration.
@@ -10,12 +9,32 @@ import { NoGuaranteedEffectiveValueError } from './errors';
  * want to read the deprecated configuration as well. See also the base `VCReader` class for why we
  * prefer to read configuration values through this class instead of just using the raw vscode API.
  */
-export class VCDualReader<T, D> extends VCReader<T> {
+export class VCDualReader<T, D, E> {
     
+    /**
+     * Register a validating reader that simultaneously reads values from a new and a deprecated 
+     * configuration.
+     * 
+     * @throws `ConfigurationNameEmptyError` if either `name` or `deprName` is empty.
+     */
+    public constructor(private readonly args: VCDualReaderCtorParams<T, D, E>) {
+        this.newReader  = new VCReader({ ...args });
+        this.deprReader = new VCReader({
+            name:      args.deprName,
+            validate:  args.deprValidate,
+            transform: args.deprTransform
+        });
+    }
+
+    /**
+     * Reader for the new configuration.
+     */
+    private readonly newReader: VCReader<T, E>;
+
     /** 
      * Reader for the deprecated configuration. 
      */
-    private readonly deprReader: VCReader<D>;
+    private readonly deprReader: VCReader<D, E>;
 
     /** 
      * Get the following validated configuration values for the new and deprecated configurations:
@@ -44,8 +63,12 @@ export class VCDualReader<T, D> extends VCReader<T> {
      * not defined are returned as `undefined`.
      * 
      * Along with the various configuration values listed above, the `effectiveValue` is also 
-     * returned. The effective value is the last in the list above that is defined and valid. The 
-     * effective value is guaranteed to be a valid value, otherwise an error will be thrown.
+     * returned. The effective value is the lowest value in the list above that is defined and valid. 
+     * If the effective value is from the new configuration, it will be transformed with the `transform`
+     * callback provided in the constructor before being returned. On the other hand, if the effective 
+     * value is from the deprecated configuration, it will be transformed with `deprTransform` before
+     * being returned. The effective value is guaranteed to be defined, otherwise this method will 
+     * throw an error.
      * 
      * [here]: https://code.visualstudio.com/api/references/vscode-api#WorkspaceConfiguration
      * 
@@ -60,83 +83,150 @@ export class VCDualReader<T, D> extends VCReader<T> {
      *              a multi-root workspace. However, the exact way the default scope is determined 
      *              is not really made clear by vscode's API.
      * 
-     * @throws `NoGuaranteedEffectiveValue` if an effective value cannot be calcualted. 
+     * @throws `NoEffectiveValueError` if an effective value cannot be calculated. 
      */
-    public read(scope?: ConfigurationScope): DualValues<T, D> {
-        const newer = super._read(scope);
-        const depr  = this.deprReader._read(scope);
-        let effectiveValue: T | undefined;
-        
-        // The newer configuration always takes precedence in situations where the scopes are tied.
-        if (newer.effectiveScope >= depr.effectiveScope) {
-            effectiveValue = newer.effectiveValue;
-        } else if (depr.effectiveValue !== undefined) {
-            effectiveValue = this.args2.normalize(depr.effectiveValue);
-        } else {
+    public read(scope?: ConfigurationScope): DualValues<T, D, E> {
+        const values = this._read(scope);
 
-            // To get here, it must be true that:
-            //  
-            //   1. `newer.effectiveScope` < `depr.effectiveScope`.
-            //   2. `depr.effectiveValue` is `undefined`.
-            //
-            // But 1 implies that `depr.effectiveScope` > `EffectiveScope.NONE`, which then implies 
-            // that `depr.effectiveValue` is defined. That contradicts 2, thus this branch is 
-            // unreachable.
-            throw new Error("Unreachable!");
+        // Calculate the effective value and scope by applying shadowing rules.
+        let effectiveValue: E;
+        if (values.workspaceFolderLanguageValue !== undefined) {
+            effectiveValue = this.args.transform(values.workspaceFolderLanguageValue);
+        } else if (values.deprWorkspaceFolderLanguageValue !== undefined) {
+            effectiveValue = this.args.deprTransform(values.deprWorkspaceFolderLanguageValue);
+        } else if (values.workspaceLanguageValue !== undefined) {
+            effectiveValue = this.args.transform(values.workspaceLanguageValue);
+        } else if (values.deprWorkspaceLanguageValue !== undefined) {
+            effectiveValue = this.args.deprTransform(values.deprWorkspaceLanguageValue);
+        } else if (values.globalLanguageValue !== undefined) {
+            effectiveValue = this.args.transform(values.globalLanguageValue);
+        } else if (values.deprGlobalLanguageValue !== undefined) {
+            effectiveValue = this.args.deprTransform(values.deprGlobalLanguageValue);
+        } else if (values.defaultLanguageValue !== undefined) {
+            effectiveValue = this.args.transform(values.defaultLanguageValue);
+        } else if (values.deprDefaultLanguageValue !== undefined) {
+            effectiveValue = this.args.deprTransform(values.deprDefaultLanguageValue);
+        } else if (values.workspaceFolderValue !== undefined) {
+            effectiveValue = this.args.transform(values.workspaceFolderValue);
+        } else if (values.deprWorkspaceFolderValue !== undefined) {
+            effectiveValue = this.args.deprTransform(values.deprWorkspaceFolderValue);
+        } else if (values.workspaceValue !== undefined) {
+            effectiveValue = this.args.transform(values.workspaceValue);
+        } else if (values.deprWorkspaceValue !== undefined) {
+            effectiveValue = this.args.deprTransform(values.deprWorkspaceValue);
+        } else if (values.globalValue !== undefined) {
+            effectiveValue = this.args.transform(values.globalValue);
+        } else if (values.deprGlobalValue !== undefined) {
+            effectiveValue = this.args.deprTransform(values.deprGlobalValue);
+        } else if (values.defaultValue !== undefined) {
+            effectiveValue = this.args.transform(values.defaultValue);
+        } else if (values.deprDefaultValue !== undefined) {
+            effectiveValue = this.args.deprTransform(values.deprDefaultValue);
+        } else {
+            throw new NoEffectiveValueError(`No effective value between ${this.args.name} and ${this.args.deprName}.`);
         }
-        if (effectiveValue === undefined) {
-            throw new NoGuaranteedEffectiveValueError(
-                'Unable to obtain a guaranteed effective value from the merged view of'
-                + ` ${this.args2.name} and ${this.args2.deprName}`
-            );
-        }
-        return {
-            ...newer,
-            deprDefaultValue:                 depr.defaultValue,
-            deprGlobalValue:                  depr.globalValue,
-            deprWorkspaceValue:               depr.workspaceValue,
-            deprWorkspaceFolderValue:         depr.workspaceFolderValue,
-            deprDefaultLanguageValue:         depr.defaultLanguageValue,
-            deprGlobalLanguageValue:          depr.globalLanguageValue,
-            deprWorkspaceLanguageValue:       depr.workspaceLanguageValue,
-            deprWorkspaceFolderLanguageValue: depr.workspaceFolderLanguageValue,
-            effectiveValue
-        };
+
+        return { ...values, effectiveValue };
     }
 
-    /**
-     * Register a validating reader that simultaneously reads values from a new and a deprecated 
-     * configuration.
-     * 
-     * @param name  Full name of the new configuration.
-     * @param validate Callback used to validate values of the new configuration.
-     * @param deprName Full name of the deprecated configuration.
-     * @param deprValidate Callback used to validate values of the deprecated configuration.
-     * @param normalize Callback to transform values of the deprecated configuration to the type of 
-     *                  the new configuration.
-     * 
-     * @throws `ConfigurationNameEmptyError` if either `name` or `deprName` is empty.
-     */
-    public constructor(private readonly args2: {
-        name:         string,
-        validate:     (t: unknown) => t is T,
-        deprName:     string,
-        deprValidate: (d: unknown) => d is D,
-        normalize:    (d: D) => T
-    }) {
-
-        // Super class instance handles the new configuration.
-        super({
-            name:     args2.name,
-            validate: args2.validate
-        });
-
-        // Another reader handles the deprecated configuration.
-        this.deprReader = new VCReader({
-            name:     args2.deprName,
-            validate: args2.deprValidate
-        });
+    /** @internal */
+    public _read(scope: ConfigurationScope | undefined): DualValuesPartial<T, D> {
+        const newValues  = this.newReader._read(scope);
+        const deprValues = this.deprReader._read(scope);
+        return {
+            ...newValues,
+            deprDefaultValue:                 deprValues.defaultValue,
+            deprGlobalValue:                  deprValues.globalValue,
+            deprWorkspaceValue:               deprValues.workspaceValue,
+            deprWorkspaceFolderValue:         deprValues.workspaceFolderValue,
+            deprDefaultLanguageValue:         deprValues.defaultLanguageValue,
+            deprGlobalLanguageValue:          deprValues.globalLanguageValue,
+            deprWorkspaceLanguageValue:       deprValues.workspaceLanguageValue,
+            deprWorkspaceFolderLanguageValue: deprValues.workspaceFolderLanguageValue,
+        };
     }
 
 } 
 
+/**
+ * The parameters of `VCDualReader`'s constructor.
+ */
+export interface VCDualReaderCtorParams<T, D, E> extends VCReaderCtorParams<T, E> {
+
+    /**
+     * Full name of the deprecated configuration.
+     */
+    deprName: string,
+
+    /**
+     * Callback used to validated values of the deprecated configuration.
+     */
+    deprValidate: (d: unknown) => d is D,
+
+    /**
+     * Callback used to transform the effective value if the effective value is from the deprecated 
+     * configuration.
+     */
+    deprTransform: (d: D) => E
+
+}
+
+/**
+ * The validated values of both the new and deprecated configurations.
+ */
+export interface DualValuesPartial<T, D> extends ValuesPartial<T> {
+
+    /**
+     * The validated default value of the deprecated configuration.
+     */
+    deprDefaultValue: D | undefined;
+
+    /** 
+     * The validated global value of the deprecated configuration.
+     */
+    deprGlobalValue: D | undefined;
+
+    /**
+     * The validated workspace value of the deprecated configuration.
+     */
+    deprWorkspaceValue: D | undefined;
+
+    /**
+     * The validated workspace folder value of the deprecated configuration.
+     */
+    deprWorkspaceFolderValue: D | undefined;
+    
+    /**
+     * The validated language specific default value of the deprecated configuration.
+     */
+    deprDefaultLanguageValue: D | undefined;
+
+    /**
+     * The validated language specific global value of the deprecated configuration.
+     */
+    deprGlobalLanguageValue: D | undefined;
+
+    /**
+     * The validated language specific workspace value of the deprecated configuration.
+     */
+    deprWorkspaceLanguageValue: D | undefined;
+
+    /**
+     * The validated language specific workspace folder value of the deprecated configuration.
+     */
+    deprWorkspaceFolderLanguageValue: D | undefined;
+
+}
+
+/**
+ * The validated values of both the new and deprecated configurations along with the transformed
+ * effective value.
+ */
+ export interface DualValues<T, D, E> extends DualValuesPartial<T, D> {
+
+    /**
+     * The transformed effective value.
+     */
+     effectiveValue: E;
+
+}

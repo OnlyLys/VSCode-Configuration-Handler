@@ -1,7 +1,7 @@
-export class NoGuaranteedEffectiveValueError extends Error {
+export class NoEffectiveValueError extends Error {
     public constructor(msg: string) {
         super(msg);
-        this.name = 'NoGuaranteedEffectiveValueError';
+        this.name = 'NoEffectiveValueError';
     }
 }
 

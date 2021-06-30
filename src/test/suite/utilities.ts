@@ -1,273 +1,213 @@
 import * as assert from 'assert';
 import { ConfigurationTarget, ConfigurationScope, workspace } from 'vscode';
-import { splitName, VCReader } from '../../vc-reader';
-import { Values, DualValues } from '../../values';
-import { VCDualReader } from '../../vc-dual-reader';
+import { splitName, ValuesPartial, VCReader, VCReaderCtorParams } from '../../vc-reader';
+import { DualValuesPartial, VCDualReader, VCDualReaderCtorParams } from '../../vc-dual-reader';
 
-/** We can input values which are intentionally invalid by tagging `valid` with `false`. */
-type Input<T> = { valid: true;  value: T } | { valid: false; value: unknown };
-
-interface UserDefinable<T> {
-    global:                   Input<T>;
-    workspace:                Input<T>;
-    workspaceFolder:          Input<T>;
-    globalLanguage:           Input<T>;
-    workspaceLanguage:        Input<T>;
-    workspaceFolderLanguage:  Input<T>;
+/**
+ * Scopes which can be configured by the user.
+ */
+interface UserConfigurable {
+    globalValue:                  unknown;
+    workspaceValue:               unknown;
+    workspaceFolderValue:         unknown;
+    globalLanguageValue:          unknown;
+    workspaceLanguageValue:       unknown;
+    workspaceFolderLanguageValue: unknown;
 }
 
-function unwrapAssert<T>(actualValue: T | undefined, input: Input<T>): void {
-    assert.deepStrictEqual(actualValue, input.valid ? input.value : undefined);
+interface DualUserPreconfigurable extends UserConfigurable {
+    deprGlobalValue:                  unknown;
+    deprWorkspaceValue:               unknown;
+    deprWorkspaceFolderValue:         unknown;
+    deprGlobalLanguageValue:          unknown;
+    deprWorkspaceLanguageValue:       unknown;
+    deprWorkspaceFolderLanguageValue: unknown;
 }
 
-function assertValues<T>(actual: Values<T>, spec: VCReaderTestSpec<T>): void {
-    assert.deepStrictEqual(actual.defaultValue,         spec.expected.defaultValue);
-    assert.deepStrictEqual(actual.defaultLanguageValue, spec.expected.defaultLanguageValue);
-    assert.deepStrictEqual(actual.effectiveValue,       spec.expected.effectiveValue);
-    unwrapAssert(actual.globalValue,                    spec.userDefinable.global);
-    unwrapAssert(actual.workspaceValue,                 spec.userDefinable.workspace);
-    unwrapAssert(actual.workspaceFolderValue,           spec.userDefinable.workspaceFolder);
-    unwrapAssert(actual.globalLanguageValue,            spec.userDefinable.globalLanguage);
-    unwrapAssert(actual.workspaceLanguageValue,         spec.userDefinable.workspaceLanguage);
-    unwrapAssert(actual.workspaceFolderLanguageValue,   spec.userDefinable.workspaceFolderLanguage);
+/**
+ * Values that we expect a `VCReader` to yield.
+ */
+interface Expected<T, E> extends ValuesPartial<T> {
+    
+    /**
+     * We always expect `defaultLanguageValue` to be `undefined` for the configurations we are 
+     * about to read, because there is no way for a third party extensions (such as this one) to 
+     * specify language specific defaults for its own configurations. 
+     */
+    defaultLanguageValue: undefined;
+
+    effectiveValue: E | undefined;
 }
 
-function assertDualValues<T, D>(actual: DualValues<T, D>, spec: VCDualReaderTestSpec<T, D>): void {
+/**
+ * Values that we expect a `DualVCReader` to yield.
+ */
+interface DualExpected<T, D, E> extends DualValuesPartial<T, D> {
+    
+    /**
+     * We always expect `defaultLanguageValue` to be `undefined` for the configurations we are about 
+     * to read, because there is no way for a third party extensions (such as this one) to specify 
+     * language specific defaults for its own configurations. 
+     */
+    defaultLanguageValue: undefined;
 
-    // Assert all values of the new configuration and the effective value.
-    assertValues(actual, spec);
+    /**
+     * We always expect `deprDefaultLanguageValue` to be `undefined` for the configurations we are 
+     * about to read, because there is no way for a third party extensions (such as this one) to 
+     * specify language specific defaults for its own configurations. 
+     */
+    deprDefaultLanguageValue: undefined;
 
-    // Assert the values of the deprecated configuration.
-    assert.deepStrictEqual(actual.deprDefaultValue,         spec.deprExpected.defaultValue);
-    assert.deepStrictEqual(actual.deprDefaultLanguageValue, spec.deprExpected.defaultLanguageValue);
-    unwrapAssert(actual.deprGlobalValue,                    spec.deprUserDefinable.global);
-    unwrapAssert(actual.deprWorkspaceValue,                 spec.deprUserDefinable.workspace);
-    unwrapAssert(actual.deprWorkspaceFolderValue,           spec.deprUserDefinable.workspaceFolder);
-    unwrapAssert(actual.deprGlobalLanguageValue,            spec.deprUserDefinable.globalLanguage);
-    unwrapAssert(actual.deprWorkspaceLanguageValue,         spec.deprUserDefinable.workspaceLanguage);
-    unwrapAssert(actual.deprWorkspaceFolderLanguageValue,   spec.deprUserDefinable.workspaceFolderLanguage);
+    effectiveValue: E | undefined;
 }
 
-// -------------------------------------------------------------------------------------
-// Utilities to test `VCReader`.
+function assertValuesPartial<T>(actual: ValuesPartial<T>, expected: ValuesPartial<T>) {
+    assert.deepStrictEqual(actual.defaultValue,                 expected.defaultValue);
+    assert.deepStrictEqual(actual.globalValue,                  expected.globalValue);
+    assert.deepStrictEqual(actual.workspaceValue,               expected.workspaceValue);
+    assert.deepStrictEqual(actual.workspaceFolderValue,         expected.workspaceFolderValue);
+    assert.deepStrictEqual(actual.defaultLanguageValue,         expected.defaultLanguageValue);
+    assert.deepStrictEqual(actual.globalLanguageValue,          expected.globalLanguageValue);
+    assert.deepStrictEqual(actual.workspaceLanguageValue,       expected.workspaceLanguageValue);
+    assert.deepStrictEqual(actual.workspaceFolderLanguageValue, expected.workspaceFolderLanguageValue);
+}
+
+function assertDualValuesPartial<T, D>(actual: DualValuesPartial<T, D>, expected: DualValuesPartial<T, D>) {
+    assertValuesPartial(actual, expected);
+    assert.deepStrictEqual(actual.deprDefaultValue,                 expected.deprDefaultValue);
+    assert.deepStrictEqual(actual.deprGlobalValue,                  expected.deprGlobalValue);
+    assert.deepStrictEqual(actual.deprWorkspaceValue,               expected.deprWorkspaceValue);
+    assert.deepStrictEqual(actual.deprWorkspaceFolderValue,         expected.deprWorkspaceFolderValue);
+    assert.deepStrictEqual(actual.deprDefaultLanguageValue,         expected.deprDefaultLanguageValue);
+    assert.deepStrictEqual(actual.deprGlobalLanguageValue,          expected.deprGlobalLanguageValue);
+    assert.deepStrictEqual(actual.deprWorkspaceLanguageValue,       expected.deprWorkspaceLanguageValue);
+    assert.deepStrictEqual(actual.deprWorkspaceFolderLanguageValue, expected.deprWorkspaceFolderLanguageValue);
+}
  
 /**
  * Specifies a test for the `testVCReader` function.
  */
-interface VCReaderTestSpec<T> {
-    name: string;
-    scope: ConfigurationScope;
-    validate: (t: unknown) => t is T;
-    expected: {
-        defaultValue: T | undefined;
+export interface VCReaderTestSpec<T, E> extends VCReaderCtorParams<T, E>{
 
-        /**
-         * Note that the `defaultLanguageValue` can only be `undefined` because there is no way for 
-         * a third party extension to specify language based defaults for its configurations. In 
-         * other words, there is no way for us here to specify a language based default for any of 
-         * the dummy configurations we use for our tests. Therefore we can't expect any value other 
-         * than `undefined`.
-         *
-         * However, this property will still be left here in case vscode does allow that to happen 
-         * in the future.
-         */
-        defaultLanguageValue: undefined;
-        effectiveValue: T | undefined;
-    }
+    /**
+     * Description of the test that is printed into the terminal.
+     */
+    description: string;
 
     /** 
-     * Values which we set then read back via `VCReader`. 
+     * In which scope we conduct the tests in.
      */
-    userDefinable: UserDefinable<T>;
+    scope: Thenable<ConfigurationScope>;
+
+    /**
+     * Set the following values before executing the test.
+     */
+    preconfigure: UserConfigurable;
+
+    /**
+     * Values that we expect the reader to yield.
+     */
+    expected: Expected<T, E>;
+
 }
 
-export async function testVCReader<T>(spec: VCReaderTestSpec<T>): Promise<void> {
+/**
+ * Initialize a `VCReader`, set the configuration values in the `preconfigure` argument, then check 
+ * that the `VCReader` we created yields the expected values.
+ */ 
+export async function testVCReader<T, E>(spec: VCReaderTestSpec<T, E>): Promise<void> {
+    const scope  = await spec.scope;
     const reader = new VCReader(spec);
-    await setConfiguration(spec.name, spec.scope, spec.userDefinable);
-
-    // If we expect that an effective value can't be found, then we expect `read` to throw.
+    await setConfiguration(spec.name, scope, spec.preconfigure);
     if (spec.expected.effectiveValue === undefined) {
-        assert.throws(function () {
-            reader.read(spec.scope);
-        });
+
+        // If we expect that an effective value can't be found, then we expect this call to throw.
+        assert.throws(function () { reader.read(scope); });
+
+        // We check the rest of the values using the internal function.
+        assertValuesPartial(reader._read(scope), spec.expected);
     } else {
-        assertValues<T>(reader.read(spec.scope), spec);
+        const actual = reader.read(scope);
+        assertValuesPartial(actual, spec.expected);
+        assert.deepStrictEqual(actual.effectiveValue, spec.expected.effectiveValue);
     }
 }
-
-// -------------------------------------------------------------------------------------
-// Utilities to test `VCDualReader`.
 
 /**
  * Specifies a test for the `testVCDualReader` function.
  */
-interface VCDualReaderTestSpec<T, D> extends VCReaderTestSpec<T> {
-    deprName: string;
-    deprValidate: (d: unknown) => d is D;
-    normalize: (d: D) => T;
-    deprExpected: {
-        defaultValue: D | undefined;
+export interface VCDualReaderTestSpec<T, D, E> extends VCReaderTestSpec<T, E>, VCDualReaderCtorParams<T, D, E> {
 
-        /** 
-         * See `VCReaderTestSpec` for why this is `undefined`. 
-         */
-        defaultLanguageValue: undefined;
-    }
-
-    /** 
-     * For the deprecated configuration. 
+    /**
+     * Set the following values for the deprecated configuration before executing the test.
      */
-    deprUserDefinable: UserDefinable<D>;
-}
+    preconfigure: DualUserPreconfigurable;
 
-export async function testVCDualReader<T, D>(spec: VCDualReaderTestSpec<T, D>): Promise<void> {
-    const reader = new VCDualReader(spec);
-    await setConfiguration(spec.name,     spec.scope, spec.userDefinable);
-    await setConfiguration(spec.deprName, spec.scope, spec.deprUserDefinable);
+    /**
+     * Values that we expect the reader to yield for the deprecated configuration.
+     */
+    expected: DualExpected<T, D, E>;
 
-    // If we expect that an effective value can't be found, then we expect `read` to throw.
-    if (spec.expected.effectiveValue === undefined) {
-        assert.throws(function () {
-            reader.read(spec.scope);
-        });
-    } else {
-        assertDualValues<T, D>(reader.read(spec.scope), spec);
-    }
-}
-
-// -------------------------------------------------------------------------------------
-// Utilities to set and clear configuration values.
-
-export async function setConfiguration<T>(
-    name: string,
-    scope: ConfigurationScope,
-    input: UserDefinable<T>
-): Promise<void> 
-{
-    const { section, child } = splitName(name);
-    const c = workspace.getConfiguration(section, scope);
-    await c.update(child, input.global.value,                  ConfigurationTarget.Global,          false);
-    await c.update(child, input.workspace.value,               ConfigurationTarget.Workspace,       false);
-    await c.update(child, input.workspaceFolder.value,         ConfigurationTarget.WorkspaceFolder, false);
-    await c.update(child, input.globalLanguage.value,          ConfigurationTarget.Global,          true);
-    await c.update(child, input.workspaceLanguage.value,       ConfigurationTarget.Workspace,       true);
-    await c.update(child, input.workspaceFolderLanguage.value, ConfigurationTarget.WorkspaceFolder, true);
-}
-
-/** 
- * Test the `setConfiguration` function. 
- */
-export async function testSetConfiguration(name: string, scope: ConfigurationScope): Promise<void> {
-
-    const { section, child } = splitName(name);
-
-    // Set to arbitrary values.
-    await setConfiguration(name, scope, {
-        global:                  { valid: true, value: 2 },
-        workspace:               { valid: true, value: 3 },
-        workspaceFolder:         { valid: true, value: 4 },
-        globalLanguage:          { valid: true, value: 5 },
-        workspaceLanguage:       { valid: true, value: 6 },
-        workspaceFolderLanguage: { valid: true, value: 7 }
-    });
-
-    // Check by reading back using the raw extension API then comparing against expected values.
-    const inspect = workspace.getConfiguration(section, scope).inspect(child);
-    if (inspect === undefined) {
-        throw new Error('`Inspect` is unexpectedly `undefined`!');
-    }
-    assert.deepStrictEqual(inspect.globalValue,                  2);
-    assert.deepStrictEqual(inspect.workspaceValue,               3);
-    assert.deepStrictEqual(inspect.workspaceFolderValue,         4);
-    assert.deepStrictEqual(inspect.globalLanguageValue,          5);
-    assert.deepStrictEqual(inspect.workspaceLanguageValue,       6);
-    assert.deepStrictEqual(inspect.workspaceFolderLanguageValue, 7);
-
-};
-
-export async function clearConfiguration(name: string, scope: ConfigurationScope): Promise<void> {
-    return setConfiguration(name, scope, {
-        global:                  { valid: false, value: undefined },
-        workspace:               { valid: false, value: undefined },
-        workspaceFolder:         { valid: false, value: undefined },
-        globalLanguage:          { valid: false, value: undefined },
-        workspaceLanguage:       { valid: false, value: undefined },
-        workspaceFolderLanguage: { valid: false, value: undefined }
-    });
-}
-
-/** 
- * Test the `clearConfiguration` function.
- */
-export async function testClearConfiguration(name: string, scope: ConfigurationScope): Promise<void> {
-
-    const { section, child } = splitName(name);
-
-    // Set to arbitrary values which we will then erase. 
-    await setConfiguration(name, scope, {
-        global:                  { valid: true, value: 2 },
-        workspace:               { valid: true, value: 3 },
-        workspaceFolder:         { valid: true, value: 4 },
-        globalLanguage:          { valid: true, value: 5 },
-        workspaceLanguage:       { valid: true, value: 6 },
-        workspaceFolderLanguage: { valid: true, value: 7 }
-    });
-    await clearConfiguration(name, scope);
-    const inspect = workspace.getConfiguration(section, scope).inspect(child);
-    if (inspect === undefined) {
-        throw new Error('`Inspect` is unexpectedly `undefined`!');
-    }
-    assert.deepStrictEqual(inspect.globalValue,                  undefined);
-    assert.deepStrictEqual(inspect.workspaceValue,               undefined);
-    assert.deepStrictEqual(inspect.workspaceFolderValue,         undefined);
-    assert.deepStrictEqual(inspect.globalLanguageValue,          undefined);
-    assert.deepStrictEqual(inspect.workspaceLanguageValue,       undefined);
-    assert.deepStrictEqual(inspect.workspaceFolderLanguageValue, undefined);
-};
-
-/** 
- * Construct a `VCReader` and assert that the constructor throws.
- * 
- * A dummy `validate` callback is passed to the constructor.
- */
-export function assertVCReaderCtorThrows(name: string): void {
-
-    // We use a dummy callback because we just want to know whether the constructor throws. This
-    // callback isn't called at all in the constructor so anything will do.
-    const validate = (t: unknown): t is number => typeof t === 'number';
-
-    assert.throws(
-        function () {
-            new VCReader({
-                name,
-                validate
-            });
-        }
-    );
 }
 
 /**
- * Construct a `VCDualReader` and assert that the constructor throws.
+ * Initialize a `VCDualReader`, set the configuration values in the `preconfigure` argument, then 
+ * check that the `VCDualReader` we created yields the expected values.
  * 
- * Dummy `validate`, `deprValidate` and `normalize` callbacks are passed to the constructor.
- */
-export function assertVCDualReaderCtorThrows(name: string, deprName: string): void {
-    
-    // We use dummy callbacks because we just want to know whether the constructor throws. These 
-    // callbacks aren't called at all in the constructor so anything will do.
-    const validate     = (t: unknown): t is number => typeof t === 'number';
-    const deprValidate = (d: unknown): d is string => typeof d === 'string';
-    const normalize    = () => 10;
+ * The `VCDualReader` is initialized with the `args` argument.
+ */ 
+export async function testVCDualReader<T, D, E>(spec: VCDualReaderTestSpec<T, D, E>): Promise<void> {
+    const reader = new VCDualReader(spec);
+    const scope  = await spec.scope;
+    await setConfiguration(spec.name,     scope, spec.preconfigure);
+    await setConfiguration(spec.deprName, scope, {
+        globalValue:                    spec.preconfigure.deprGlobalValue,
+        workspaceValue:                 spec.preconfigure.deprWorkspaceValue,
+        workspaceFolderValue:           spec.preconfigure.deprWorkspaceFolderValue,
+        globalLanguageValue:            spec.preconfigure.deprGlobalLanguageValue,
+        workspaceLanguageValue:         spec.preconfigure.deprWorkspaceLanguageValue,
+        workspaceFolderLanguageValue:   spec.preconfigure.deprWorkspaceFolderLanguageValue,
+    });
 
-    assert.throws(
-        function () {
-            new VCDualReader({
-                name,
-                validate,
-                deprName,
-                deprValidate,
-                normalize
-            });
-        }
-    );
+    if (spec.expected.effectiveValue === undefined) {
+        
+        // If we expect that an effective value can't be found, then we expect this call to throw.
+        assert.throws(function () { reader.read(scope); });
+
+        // We check the rest of the values using the internal function.
+        assertDualValuesPartial(reader._read(scope), spec.expected);
+    } else {
+        const actual = reader.read(scope);
+        assertDualValuesPartial(actual, spec.expected);
+        assert.deepStrictEqual(actual.effectiveValue, spec.expected.effectiveValue);
+    }
+}
+
+export async function setConfiguration(
+    name: string,
+    scope: ConfigurationScope,
+    values: UserConfigurable
+): Promise<void>  {
+    const { section, child } = splitName(name);
+    const c = workspace.getConfiguration(section, scope);
+    await c.update(child, values.globalValue,                  ConfigurationTarget.Global,          false);
+    await c.update(child, values.workspaceValue,               ConfigurationTarget.Workspace,       false);
+    await c.update(child, values.workspaceFolderValue,         ConfigurationTarget.WorkspaceFolder, false);
+    await c.update(child, values.globalLanguageValue,          ConfigurationTarget.Global,          true);
+    await c.update(child, values.workspaceLanguageValue,       ConfigurationTarget.Workspace,       true);
+    await c.update(child, values.workspaceFolderLanguageValue, ConfigurationTarget.WorkspaceFolder, true);
+}
+
+export async function clearConfiguration(
+    name: string, 
+    scope: ConfigurationScope
+): Promise<void> {
+    return setConfiguration(name, scope, {
+        globalValue:                  undefined,
+        workspaceValue:               undefined,
+        workspaceFolderValue:         undefined,
+        globalLanguageValue:          undefined,
+        workspaceLanguageValue:       undefined,
+        workspaceFolderLanguageValue: undefined
+    });
 }

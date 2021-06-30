@@ -2,4 +2,4 @@
 
 export { VCReader } from './vc-reader';
 export { VCDualReader } from './vc-dual-reader';
-export { NoGuaranteedEffectiveValueError, ConfigurationNameEmptyError } from './errors';
+export { NoEffectiveValueError, ConfigurationNameEmptyError } from './errors';

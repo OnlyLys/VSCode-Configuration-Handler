@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.7.0
+
+Upgrade dev dependencies and vscode engine version, but downgrade `@types/node` 
+dev dependency to the current version of Node.JS used by vscode.
+
 ## 0.6.0
 
 Revamp the code and documentation. Furthermore, add ability to transform the

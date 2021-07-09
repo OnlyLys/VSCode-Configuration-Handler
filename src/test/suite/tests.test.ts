@@ -124,7 +124,8 @@ const deprTransform = (d: { open: string, close: string }[]): string => {
  */
 const vcReaderTests: VCReaderTestSpec<string[], string>[] = [
     { 
-        description: `A - Good default value. No values elsewhere.`,
+        description: 'A - Good default value. ' 
+                   + 'No values elsewhere.',
         scope, validate, transform,
         name: goodDefaultName,
         preconfigure: {
@@ -148,7 +149,8 @@ const vcReaderTests: VCReaderTestSpec<string[], string>[] = [
         },
     },
     { 
-        description: `B - Good default value. Bad values elsewhere.`,
+        description: 'B - Good default value. ' 
+                   + 'Bad values elsewhere.',
         scope, validate, transform,
         name: goodDefaultName, 
         preconfigure: {
@@ -172,7 +174,8 @@ const vcReaderTests: VCReaderTestSpec<string[], string>[] = [
         },
     },
     { 
-        description: `C - Bad default value. No values elsewhere.`,
+        description: 'C - Bad default value. '
+                   + 'No values elsewhere.',
         scope, validate, transform,
         name: badDefaultName,
         preconfigure: {
@@ -196,7 +199,8 @@ const vcReaderTests: VCReaderTestSpec<string[], string>[] = [
         },
     },
     {
-        description: `D - Good default and global values. No values elsewhere.`,
+        description: 'D - Good default and global values. '
+                   + 'No values elsewhere.',
         scope, validate, transform,
         name: goodDefaultName, 
         preconfigure: {
@@ -220,7 +224,9 @@ const vcReaderTests: VCReaderTestSpec<string[], string>[] = [
         },
     },
     {
-        description: `E - Good default value. Bad global value. No values elsewhere.`,
+        description: 'E - Good default value. '
+                   + 'Bad global value. '
+                   + 'No values elsewhere.',
         scope, validate, transform,
         name: goodDefaultName, 
         preconfigure: {
@@ -244,7 +250,9 @@ const vcReaderTests: VCReaderTestSpec<string[], string>[] = [
         },
     },
     { 
-        description: `F - Good global value. Bad default value. No values elsewhere.`,
+        description: 'F - Good global value. '
+                   + 'Bad default value. '
+                   + 'No values elsewhere.',
         scope, validate, transform,
         name: badDefaultName, 
         preconfigure: {
@@ -268,8 +276,9 @@ const vcReaderTests: VCReaderTestSpec<string[], string>[] = [
         },
     },
     { 
-        description: `G - Good default, global and workspace folder values. Bad workspace value. \
-        No values elsewhere.`,
+        description: 'G - Good default, global and workspace folder values. '
+                   + 'Bad workspace value. '
+                   + 'No values elsewhere.',
         scope, validate, transform,
         name: goodDefaultName, 
         preconfigure: {
@@ -293,7 +302,8 @@ const vcReaderTests: VCReaderTestSpec<string[], string>[] = [
         },
     },
     { 
-        description: `H - Good default, global and global language values. No values elsewhere.`,
+        description: 'H - Good default, global and global language values. '
+                   + 'No values elsewhere.',
         scope, validate, transform,
         name: goodDefaultName, 
         preconfigure: {
@@ -317,8 +327,9 @@ const vcReaderTests: VCReaderTestSpec<string[], string>[] = [
         },
     },
     { 
-        description: `I - Good default and workspace language values. Bad workspace value. \
-        No values elsewhere.`,
+        description: 'I - Good default and workspace language values. '
+                   + 'Bad workspace value. '
+                   + 'No values elsewhere.',
         scope, validate, transform,
         name: goodDefaultName, 
         preconfigure: {
@@ -342,9 +353,9 @@ const vcReaderTests: VCReaderTestSpec<string[], string>[] = [
         },
     },
     { 
-        description: `J - Good global, workspace and workspace folder language values. \
-        Bad default, workspace folder, global language and workspace language values. \ 
-        No values elsewhere.`,
+        description: 'J - Good global, workspace and workspace folder language values. '
+                   + 'Bad default, workspace folder, global language and workspace language values. ' 
+                   + 'No values elsewhere.',
         scope, validate, transform,
         name: badDefaultName, 
         preconfigure: {
@@ -368,7 +379,8 @@ const vcReaderTests: VCReaderTestSpec<string[], string>[] = [
         },
     },
     {
-        description: `K - Good everywhere except default language value. No default language value.`,
+        description: 'K - Good everywhere except default language value. ' 
+                   + 'No default language value.',
         scope, validate, transform,
         name: goodDefaultName, 
         preconfigure: {
@@ -392,7 +404,8 @@ const vcReaderTests: VCReaderTestSpec<string[], string>[] = [
         },
     },
     {
-        description: `L - Bad everywhere except default language value. No default language value.`,
+        description: 'L - Bad everywhere except default language value. ' 
+                   + 'No default language value.',
         scope, validate, transform,
         name: badDefaultName, 
         preconfigure: {
@@ -439,7 +452,8 @@ const vcReaderTests: VCReaderTestSpec<string[], string>[] = [
  */
 const vcDualReaderTests: VCDualReaderTestSpec<string[], { open: string, close: string }[], string>[] = [
     {
-        description: `A - Good default and depr default values. No values elsewhere.`,
+        description: 'A - Good default and depr default values. ' 
+                   + 'No values elsewhere.',
         scope, validate, transform, deprValidate, deprTransform,
         name:     goodDefaultName,
         deprName: deprGoodDefaultName,
@@ -478,7 +492,9 @@ const vcDualReaderTests: VCDualReaderTestSpec<string[], { open: string, close: s
         }
     },
     {
-        description: `B - Good default value. Bad depr default value. No values elsewhere.`,
+        description: 'B - Good default value. ' 
+                   + 'Bad depr default value. ' 
+                   + 'No values elsewhere.',
         scope, validate, transform, deprValidate, deprTransform,
         name:     goodDefaultName,
         deprName: deprBadDefaultName,
@@ -517,7 +533,9 @@ const vcDualReaderTests: VCDualReaderTestSpec<string[], { open: string, close: s
         }
     },
     {
-        description: `C - Good depr default value. Bad default value. No values elsewhere.`,
+        description: 'C - Good depr default value. ' 
+                   + 'Bad default value. ' 
+                   + 'No values elsewhere.',
         scope, validate, transform, deprValidate, deprTransform,
         name:     badDefaultName,
         deprName: deprGoodDefaultName,
@@ -556,8 +574,9 @@ const vcDualReaderTests: VCDualReaderTestSpec<string[], { open: string, close: s
         }
     },
     { 
-        description: `D - Good default, depr default, and depr global values. \
-        Bad global and depr global language values. No values elsewhere.`,
+        description: 'D - Good default, depr default, and depr global values. '
+                   + 'Bad global and depr global language values. '
+                   + 'No values elsewhere.',
         scope, validate, transform, deprValidate, deprTransform,
         name:     goodDefaultName,
         deprName: deprGoodDefaultName,
@@ -599,8 +618,9 @@ const vcDualReaderTests: VCDualReaderTestSpec<string[], { open: string, close: s
         }
     },
     {
-        description: `E - Good default, depr default and global values. \
-        Bad depr global, workspace folder and depr workspace language values. No values elsewhere.`,
+        description: 'E - Good default, depr default and global values. '
+                   + 'Bad depr global, workspace folder and depr workspace language values. '
+                   + 'No values elsewhere.',
         scope, validate, transform, deprValidate, deprTransform,
         name:     goodDefaultName,
         deprName: deprGoodDefaultName,
@@ -642,8 +662,9 @@ const vcDualReaderTests: VCDualReaderTestSpec<string[], { open: string, close: s
         }
     },
     {
-        description: `F - Good default and depr workspace values. \
-        Bad depr default, workspace and depr workspace language folder values. No values elsewhere.`,
+        description: 'F - Good default and depr workspace values. '
+                   + 'Bad depr default, workspace and depr workspace language folder values. '
+                   + 'No values elsewhere.',
         scope, validate, transform, deprValidate, deprTransform,
         name:     goodDefaultName,
         deprName: deprBadDefaultName,
@@ -694,8 +715,8 @@ const vcDualReaderTests: VCDualReaderTestSpec<string[], { open: string, close: s
         }
     },
     {
-        description: `G - Good default, depr default, global, workspace and depr workspace values. \
-        No values elsewhere.`,
+        description: 'G - Good default, depr default, global, workspace and depr workspace values. '
+                   + 'No values elsewhere.',
         scope, validate, transform, deprValidate, deprTransform,
         name:     goodDefaultName,
         deprName: deprGoodDefaultName,
@@ -742,8 +763,9 @@ const vcDualReaderTests: VCDualReaderTestSpec<string[], { open: string, close: s
         }
     },
     {
-        description: `H - Good default, depr default, depr global, depr workspace and \
-        depr workspace folder values. Bad depr workspace folder language value. No values elsewhere.`,
+        description: 'H - Good default, depr default, depr global, depr workspace and depr workspace folder values. '
+                   + 'Bad depr workspace folder language value. '
+                   + 'No values elsewhere.',
         scope, validate, transform, deprValidate, deprTransform,
         name:     goodDefaultName,
         deprName: deprGoodDefaultName,
@@ -809,8 +831,9 @@ const vcDualReaderTests: VCDualReaderTestSpec<string[], { open: string, close: s
         }
     },
     {
-        description: `I - Good workspace and workspace folder values. \
-        Bad default, depr default, depr global and depr global language values. No values elsewhere.`,
+        description: 'I - Good workspace and workspace folder values. '
+                   + 'Bad default, depr default, depr global and depr global language values. '
+                   + 'No values elsewhere.',
         scope, validate, transform, deprValidate, deprTransform,
         name:     badDefaultName,
         deprName: deprBadDefaultName,
@@ -849,8 +872,8 @@ const vcDualReaderTests: VCDualReaderTestSpec<string[], { open: string, close: s
         }
     },
     {
-        description: `J - Good default, depr default, workspace folder and depr global language values. \
-        No values elsewhere.`,
+        description: 'J - Good default, depr default, workspace folder and depr global language values. '
+                   + 'No values elsewhere.',
         scope, validate, transform, deprValidate, deprTransform,
         name:     goodDefaultName,
         deprName: deprGoodDefaultName,
@@ -907,8 +930,9 @@ const vcDualReaderTests: VCDualReaderTestSpec<string[], { open: string, close: s
         }
     },
     {
-        description: `K - Good default, global and global language values. \
-        Bad depr default, depr workspace and depr workspace folder language values. No values elsewhere.`,
+        description: 'K - Good default, global and global language values. '
+                   + 'Bad depr default, depr workspace and depr workspace folder language values. '
+                   + 'No values elsewhere.',
         scope, validate, transform, deprValidate, deprTransform,
         name:     goodDefaultName,
         deprName: deprBadDefaultName,
@@ -950,8 +974,8 @@ const vcDualReaderTests: VCDualReaderTestSpec<string[], { open: string, close: s
         }
     },
     {
-        description: `L - Good default, depr default and depr workspace language values. \
-        No values elsewhere.`,
+        description: 'L - Good default, depr default and depr workspace language values. '
+                   + 'No values elsewhere.',
         scope, validate, transform, deprValidate, deprTransform,
         name:     goodDefaultName,
         deprName: deprGoodDefaultName,
@@ -998,8 +1022,10 @@ const vcDualReaderTests: VCDualReaderTestSpec<string[], { open: string, close: s
     },
     {
 
-        description: `M - Good default, depr default, global, depr global, global language and \
-        workspace language values. Bad workspace value. No values elsewhere.`,
+        description: 'M - Good default, depr default, global, depr global, global language '
+                       + 'and workspace language values. '
+                   + 'Bad workspace value. ' 
+                   + 'No values elsewhere.',
         scope, validate, transform, deprValidate, deprTransform,
         name:     goodDefaultName,
         deprName: deprGoodDefaultName,
@@ -1047,8 +1073,9 @@ const vcDualReaderTests: VCDualReaderTestSpec<string[], { open: string, close: s
         }
     },
     {
-        description: `N - Good depr default and depr workspace folder language values. \
-        Bad default, workspace folder and workspace folder language values. No values elsewhere.`,
+        description: 'N - Good depr default and depr workspace folder language values. '
+                   + 'Bad default, workspace folder and workspace folder language values. '
+                   + 'No values elsewhere.',
         scope, validate, transform, deprValidate, deprTransform,
         name:     badDefaultName,
         deprName: deprGoodDefaultName,
@@ -1095,9 +1122,10 @@ const vcDualReaderTests: VCDualReaderTestSpec<string[], { open: string, close: s
         }
     },
     {
-        description: `O - Good default, depr default, depr workspace language, \
-        workspace folder language and depr workspace folder language values. \
-        Bad depr workspace folder value. No values elsewhere.`,
+        description: 'O - Good default, depr default, depr workspace language, workspace folder language '
+                       + 'and depr workspace folder language values. '
+                   + 'Bad depr workspace folder value. ' 
+                   + 'No values elsewhere.',
         scope, validate, transform, deprValidate, deprTransform,
         name:     goodDefaultName,
         deprName: deprGoodDefaultName,
@@ -1149,8 +1177,8 @@ const vcDualReaderTests: VCDualReaderTestSpec<string[], { open: string, close: s
         }
     },
     {
-        description: `P - Good everywhere except the default language and depr default language values. \
-        No default language or depr default language values.`,
+        description: 'P - Good everywhere except the default language and depr default language values. '
+                   + 'No default language or depr default language values.',
         scope, validate, transform, deprValidate, deprTransform,
         name:     goodDefaultName,
         deprName: deprGoodDefaultName,
@@ -1255,9 +1283,9 @@ const vcDualReaderTests: VCDualReaderTestSpec<string[], { open: string, close: s
         }
     },
     {
-        description: `Q - Good default value. \
-        Bad everywhere except the default language and depr default language values. \
-        No default language and depr default language values.`,
+        description: 'Q - Good default value. '
+                   + 'Bad everywhere except the default language and depr default language values. '
+                   + 'No default language and depr default language values.',
         scope, validate, transform, deprValidate, deprTransform,
         name:     goodDefaultName,
         deprName: deprBadDefaultName,
@@ -1303,8 +1331,8 @@ const vcDualReaderTests: VCDualReaderTestSpec<string[], { open: string, close: s
         }
     },
     {
-        description: `R - Bad everywhere except the default language and depr default language values. \
-        No default language and depr default language values.`,
+        description: 'R - Bad everywhere except the default language and depr default language values. '
+                   + 'No default language and depr default language values.',
         scope, validate, transform, deprValidate, deprTransform,
         name:     badDefaultName,
         deprName: deprBadDefaultName,
@@ -1354,8 +1382,8 @@ const vcDualReaderTests: VCDualReaderTestSpec<string[], { open: string, close: s
         }
     },
     {
-        description: `S - Good default, depr default, global and depr workspace values. \
-        No values elsewhere.`,
+        description: 'S - Good default, depr default, global and depr workspace values. '
+                   + 'No values elsewhere.',
         scope, validate, transform, deprValidate, deprTransform,
         name:     goodDefaultName,
         deprName: deprGoodDefaultName,
@@ -1400,8 +1428,8 @@ const vcDualReaderTests: VCDualReaderTestSpec<string[], { open: string, close: s
         }
     },
     {
-        description: `T - Good default, depr default, global and depr workspace folder values. \
-        No values elsewhere.`,
+        description: 'T - Good default, depr default, global and depr workspace folder values. '
+                   + 'No values elsewhere.',
         scope, validate, transform, deprValidate, deprTransform,
         name:     goodDefaultName,
         deprName: deprGoodDefaultName,

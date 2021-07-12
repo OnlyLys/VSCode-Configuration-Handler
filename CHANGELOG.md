@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.7.1 
+
+Undo mistake in version 0.6.0 where comments were stripped from the output. Since
+this package is meant to be used as a library, it should have comments included.
+
 ## 0.7.0
 
 Upgrade dev dependencies and vscode engine version, but downgrade `@types/node` 

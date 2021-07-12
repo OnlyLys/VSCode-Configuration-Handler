@@ -15,8 +15,7 @@
         "noImplicitReturns": true,
         "noFallthroughCasesInSwitch": true,
         "noUnusedParameters": true,
-        "stripInternal": true,
-        "removeComments": true
+        "stripInternal": true
     },
     "exclude": [
         "node_modules",

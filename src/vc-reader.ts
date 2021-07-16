@@ -1,8 +1,6 @@
 import { workspace, ConfigurationScope } from 'vscode';
 import { ConfigurationNameEmptyError, NoEffectiveValueError } from './errors';
 
-export type VCReaderParams<T, E> = Pick<VCReader<T, E>, 'name' | 'validate' | 'transform'>;
-
 /** 
  * Configuration reader that validates values before yielding them.
  * 
@@ -17,17 +15,9 @@ export class VCReader<T, E> {
     /** 
      * Full name of the configuration. 
      */
-    public readonly name: string;
-
-    /** 
-     * Callback used to validate values of the configuration.
-     */
-    public readonly validate: (t: unknown) => t is T;
-
-    /**  
-     * Callback used to transform the effective value.
-     */
-    public readonly transform: (t: T) => E;
+    public get name(): string {
+        return this.args.name;
+    }
 
     /**
      * Name of the section that the configuration belongs to.
@@ -53,13 +43,10 @@ export class VCReader<T, E> {
      * 
      * @throws `ConfigurationNameEmptyError` if `name` is empty.
      */
-    public constructor(args: VCReaderParams<T, E>) {
+    public constructor(private readonly args: VCReaderParams<T, E>) {
         if (args.name.trim().length === 0) {
             throw new ConfigurationNameEmptyError(`Name cannot be empty!`);
         }
-        this.name      = args.name;
-        this.validate  = args.validate;
-        this.transform = args.transform;
         const { section, child } = splitName(args.name);
         this.section = section;
         this.child   = child;
@@ -108,21 +95,21 @@ export class VCReader<T, E> {
         // Calculate the effective value and scope by applying shadowing rules.
         let effectiveValue: E;
         if (values.workspaceFolderLanguageValue !== undefined) {
-            effectiveValue = this.transform(values.workspaceFolderLanguageValue);
+            effectiveValue = this.args.transform(values.workspaceFolderLanguageValue);
         } else if (values.workspaceLanguageValue !== undefined) {
-            effectiveValue = this.transform(values.workspaceLanguageValue);
+            effectiveValue = this.args.transform(values.workspaceLanguageValue);
         } else if (values.globalLanguageValue !== undefined) {
-            effectiveValue = this.transform(values.globalLanguageValue);
+            effectiveValue = this.args.transform(values.globalLanguageValue);
         } else if (values.defaultLanguageValue !== undefined) {
-            effectiveValue = this.transform(values.defaultLanguageValue);
+            effectiveValue = this.args.transform(values.defaultLanguageValue);
         } else if (values.workspaceFolderValue !== undefined) {
-            effectiveValue = this.transform(values.workspaceFolderValue);
+            effectiveValue = this.args.transform(values.workspaceFolderValue);
         } else if (values.workspaceValue !== undefined) {
-            effectiveValue = this.transform(values.workspaceValue);
+            effectiveValue = this.args.transform(values.workspaceValue);
         } else if (values.globalValue !== undefined) {
-            effectiveValue = this.transform(values.globalValue);
+            effectiveValue = this.args.transform(values.globalValue);
         } else if (values.defaultValue !== undefined) {
-            effectiveValue = this.transform(values.defaultValue);
+            effectiveValue = this.args.transform(values.defaultValue);
         } else {
             throw new NoEffectiveValueError(`No effective value for ${this.name}.`);
         }
@@ -141,7 +128,7 @@ export class VCReader<T, E> {
         }
 
         // Validate the configuration values in every scope.
-        const validate = (value: unknown) => this.validate(value) ? value : undefined;
+        const validate = (value: unknown) => this.args.validate(value) ? value : undefined;
         const defaultValue                 = validate(inspect.defaultValue);
         const globalValue                  = validate(inspect.globalValue);
         const workspaceValue               = validate(inspect.workspaceValue);
@@ -164,6 +151,25 @@ export class VCReader<T, E> {
     }
 
 }
+
+export interface VCReaderParams<T, E>  {
+    
+    /** 
+     * Full name of the configuration. 
+     */
+    readonly name: string;
+    
+    /** 
+     * Callback used to validate values of the configuration.
+     */
+    readonly validate: (t: unknown) => t is T;
+    
+    /**  
+     * Callback used to transform the effective value.
+     */
+    readonly transform: (t: T) => E;
+    
+};
 
 /**
  * The validated values of the configuration.

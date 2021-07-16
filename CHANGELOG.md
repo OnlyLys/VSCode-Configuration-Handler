@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.8.0
+
+Expose the arguments passed to the constructors of `VCReader` and `VCDualReader`.
+
 ## 0.7.1 
 
 Undo mistake in version 0.6.0 where comments were stripped from the output. Since

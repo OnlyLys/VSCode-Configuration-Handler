@@ -14,6 +14,28 @@ export type VCDualReaderParams<T, D, E> = Pick<VCDualReader<T, D, E>, 'deprName'
  */
 export class VCDualReader<T, D, E> {
 
+    /** 
+     * Full name of the new configuration. 
+     */
+    public get name(): string {
+        return this.newReader.name;
+    }
+
+    /** 
+     * Callback used to validate values of the new configuration.
+     */
+    public get validate(): (t: unknown) => t is T {
+        return this.newReader.validate;
+    }
+
+    /**  
+     * Callback used to transform the effective value if the effective value is from the new
+     * configuration.
+     */
+    public get transform(): (t: T) => E {
+        return this.newReader.transform;
+    }
+
     /**
      * Full name of the deprecated configuration.
      */

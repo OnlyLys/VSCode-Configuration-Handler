@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.9.0
+
+Un-expose the `validate` and `transform` properties passed to the constructors 
+of `VCReader` and `VCDualReader`. This partially undoes the change we made in
+0.8.0.
+
 ## 0.8.0
 
 Expose the arguments passed to the constructors of `VCReader` and `VCDualReader`.

@@ -25,7 +25,8 @@ async function main() {
 			extensionTestsPath,
 			launchArgs: [
 				testWorkspacePath,
-				'--disable-extensions'
+				'--disable-extensions',
+				'--disable-workspace-trust'
 			] 
 		});
 	} catch (err) {

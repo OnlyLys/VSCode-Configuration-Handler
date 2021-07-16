@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import { ConfigurationTarget, ConfigurationScope, workspace } from 'vscode';
-import { splitName, ValuesPartial, VCReader, VCReaderCtorParams } from '../../vc-reader';
-import { DualValuesPartial, VCDualReader, VCDualReaderCtorParams } from '../../vc-dual-reader';
+import { splitName, ValuesPartial, VCReader, VCReaderParams } from '../../vc-reader';
+import { DualValuesPartial, VCDualReader, VCDualReaderParams } from '../../vc-dual-reader';
 
 /**
  * Scopes which can be configured by the user.
@@ -87,7 +87,7 @@ function assertDualValuesPartial<T, D>(actual: DualValuesPartial<T, D>, expected
 /**
  * Specifies a test for the `testVCReader` function.
  */
-export interface VCReaderTestSpec<T, E> extends VCReaderCtorParams<T, E>{
+export interface VCReaderTestSpec<T, E> extends VCReaderParams<T, E>{
 
     /**
      * Description of the test that is printed into the terminal.
@@ -136,7 +136,7 @@ export async function testVCReader<T, E>(spec: VCReaderTestSpec<T, E>): Promise<
 /**
  * Specifies a test for the `testVCDualReader` function.
  */
-export interface VCDualReaderTestSpec<T, D, E> extends VCReaderTestSpec<T, E>, VCDualReaderCtorParams<T, D, E> {
+export interface VCDualReaderTestSpec<T, D, E> extends VCReaderTestSpec<T, E>, VCDualReaderParams<T, D, E> {
 
     /**
      * Set the following values for the deprecated configuration before executing the test.

@@ -1,6 +1,9 @@
-import { VCReader, ValuesPartial, VCReaderCtorParams } from './vc-reader';
+import { VCReader, ValuesPartial, VCReaderParams } from './vc-reader';
 import { ConfigurationScope } from 'vscode';
 import { NoEffectiveValueError } from './errors';
+
+export type VCDualReaderParams<T, D, E> = Pick<VCDualReader<T, D, E>, 'deprName' | 'deprValidate' | 'deprTransform'>
+                                        & VCReaderParams<T, E>;
 
 /**
  * Configuration reader that reads and validates values from a new and deprecated configuration.
@@ -10,20 +13,27 @@ import { NoEffectiveValueError } from './errors';
  * prefer to read configuration values through this class instead of just using the raw vscode API.
  */
 export class VCDualReader<T, D, E> {
-    
+
     /**
-     * Register a validating reader that simultaneously reads values from a new and a deprecated 
-     * configuration.
-     * 
-     * @throws `ConfigurationNameEmptyError` if either `name` or `deprName` is empty.
+     * Full name of the deprecated configuration.
      */
-    public constructor(private readonly args: VCDualReaderCtorParams<T, D, E>) {
-        this.newReader  = new VCReader({ ...args });
-        this.deprReader = new VCReader({
-            name:      args.deprName,
-            validate:  args.deprValidate,
-            transform: args.deprTransform
-        });
+    public get deprName(): string {
+        return this.deprReader.name;
+    }
+
+    /**
+     * Callback used to validate values of the deprecated configuration.
+     */
+    public get deprValidate(): (d: unknown) => d is D {
+        return this.deprReader.validate;
+    }
+
+    /**
+     * Callback used to transform the effective value if the effective value is from the deprecated 
+     * configuration.
+     */
+    public get deprTransform(): (d: D) => E {
+        return this.deprReader.transform;
     }
 
     /**
@@ -35,6 +45,21 @@ export class VCDualReader<T, D, E> {
      * Reader for the deprecated configuration. 
      */
     private readonly deprReader: VCReader<D, E>;
+
+    /**
+     * Register a validating reader that simultaneously reads values from a new and a deprecated 
+     * configuration.
+     * 
+     * @throws `ConfigurationNameEmptyError` if either `name` or `deprName` is empty.
+     */
+    public constructor(args: VCDualReaderParams<T, D, E>) {
+        this.newReader  = new VCReader({ ...args });
+        this.deprReader = new VCReader({
+            name:      args.deprName,
+            validate:  args.deprValidate,
+            transform: args.deprTransform
+        });
+    }
 
     /** 
      * Get the following validated configuration values for the new and deprecated configurations:
@@ -91,39 +116,39 @@ export class VCDualReader<T, D, E> {
         // Calculate the effective value and scope by applying shadowing rules.
         let effectiveValue: E;
         if (values.workspaceFolderLanguageValue !== undefined) {
-            effectiveValue = this.args.transform(values.workspaceFolderLanguageValue);
+            effectiveValue = this.newReader.transform(values.workspaceFolderLanguageValue);
         } else if (values.deprWorkspaceFolderLanguageValue !== undefined) {
-            effectiveValue = this.args.deprTransform(values.deprWorkspaceFolderLanguageValue);
+            effectiveValue = this.deprReader.transform(values.deprWorkspaceFolderLanguageValue);
         } else if (values.workspaceLanguageValue !== undefined) {
-            effectiveValue = this.args.transform(values.workspaceLanguageValue);
+            effectiveValue = this.newReader.transform(values.workspaceLanguageValue);
         } else if (values.deprWorkspaceLanguageValue !== undefined) {
-            effectiveValue = this.args.deprTransform(values.deprWorkspaceLanguageValue);
+            effectiveValue = this.deprReader.transform(values.deprWorkspaceLanguageValue);
         } else if (values.globalLanguageValue !== undefined) {
-            effectiveValue = this.args.transform(values.globalLanguageValue);
+            effectiveValue = this.newReader.transform(values.globalLanguageValue);
         } else if (values.deprGlobalLanguageValue !== undefined) {
-            effectiveValue = this.args.deprTransform(values.deprGlobalLanguageValue);
+            effectiveValue = this.deprReader.transform(values.deprGlobalLanguageValue);
         } else if (values.defaultLanguageValue !== undefined) {
-            effectiveValue = this.args.transform(values.defaultLanguageValue);
+            effectiveValue = this.newReader.transform(values.defaultLanguageValue);
         } else if (values.deprDefaultLanguageValue !== undefined) {
-            effectiveValue = this.args.deprTransform(values.deprDefaultLanguageValue);
+            effectiveValue = this.deprReader.transform(values.deprDefaultLanguageValue);
         } else if (values.workspaceFolderValue !== undefined) {
-            effectiveValue = this.args.transform(values.workspaceFolderValue);
+            effectiveValue = this.newReader.transform(values.workspaceFolderValue);
         } else if (values.deprWorkspaceFolderValue !== undefined) {
-            effectiveValue = this.args.deprTransform(values.deprWorkspaceFolderValue);
+            effectiveValue = this.deprReader.transform(values.deprWorkspaceFolderValue);
         } else if (values.workspaceValue !== undefined) {
-            effectiveValue = this.args.transform(values.workspaceValue);
+            effectiveValue = this.newReader.transform(values.workspaceValue);
         } else if (values.deprWorkspaceValue !== undefined) {
-            effectiveValue = this.args.deprTransform(values.deprWorkspaceValue);
+            effectiveValue = this.deprReader.transform(values.deprWorkspaceValue);
         } else if (values.globalValue !== undefined) {
-            effectiveValue = this.args.transform(values.globalValue);
+            effectiveValue = this.newReader.transform(values.globalValue);
         } else if (values.deprGlobalValue !== undefined) {
-            effectiveValue = this.args.deprTransform(values.deprGlobalValue);
+            effectiveValue = this.deprReader.transform(values.deprGlobalValue);
         } else if (values.defaultValue !== undefined) {
-            effectiveValue = this.args.transform(values.defaultValue);
+            effectiveValue = this.newReader.transform(values.defaultValue);
         } else if (values.deprDefaultValue !== undefined) {
-            effectiveValue = this.args.deprTransform(values.deprDefaultValue);
+            effectiveValue = this.deprReader.transform(values.deprDefaultValue);
         } else {
-            throw new NoEffectiveValueError(`No effective value between ${this.args.name} and ${this.args.deprName}.`);
+            throw new NoEffectiveValueError(`No effective value between ${this.newReader.name} and ${this.deprReader.name}.`);
         }
 
         return { ...values, effectiveValue };
@@ -147,29 +172,6 @@ export class VCDualReader<T, D, E> {
     }
 
 } 
-
-/**
- * The parameters of `VCDualReader`'s constructor.
- */
-export interface VCDualReaderCtorParams<T, D, E> extends VCReaderCtorParams<T, E> {
-
-    /**
-     * Full name of the deprecated configuration.
-     */
-    deprName: string,
-
-    /**
-     * Callback used to validated values of the deprecated configuration.
-     */
-    deprValidate: (d: unknown) => d is D,
-
-    /**
-     * Callback used to transform the effective value if the effective value is from the deprecated 
-     * configuration.
-     */
-    deprTransform: (d: D) => E
-
-}
 
 /**
  * The validated values of both the new and deprecated configurations.

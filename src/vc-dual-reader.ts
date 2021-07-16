@@ -1,4 +1,4 @@
-import { VCReader, ValuesPartial, VCReaderParams } from './vc-reader';
+import { VCReader, ValuesPartial, VCReaderParams, Values } from './vc-reader';
 import { ConfigurationScope } from 'vscode';
 import { NoEffectiveValueError } from './errors';
 
@@ -178,6 +178,46 @@ export class VCDualReader<T, D, E> {
  */
 export interface DualValuesPartial<T, D> extends ValuesPartial<T> {
 
+    /** 
+     * The validated default value of the new configuration. 
+     */
+    defaultValue: T | undefined;
+
+    /** 
+     * The validated global value of the new configuration.
+     */
+    globalValue: T | undefined;
+
+    /**
+     * The validated workspace value of the new configuration.
+     */
+    workspaceValue: T | undefined;
+
+    /**
+     * The validated workspace folder value of the new configuration.
+     */
+    workspaceFolderValue: T | undefined;
+
+    /** 
+     * The validated language specific default value of the new configuration.
+     */
+    defaultLanguageValue: T | undefined;
+
+    /**
+     * The validated language specific global value of the new configuration.
+     */
+    globalLanguageValue: T | undefined;
+
+    /**
+     * The validated language specific workspace value of the new configuration.
+     */
+    workspaceLanguageValue: T | undefined;
+
+    /**
+     * The validated language specific workspace folder value of the new configuration.
+     */
+    workspaceFolderLanguageValue: T | undefined;
+
     /**
      * The validated default value of the deprecated configuration.
      */
@@ -224,11 +264,4 @@ export interface DualValuesPartial<T, D> extends ValuesPartial<T> {
  * The validated values of both the new and deprecated configurations along with the transformed
  * effective value.
  */
- export interface DualValues<T, D, E> extends DualValuesPartial<T, D> {
-
-    /**
-     * The transformed effective value.
-     */
-     effectiveValue: E;
-
-}
+export interface DualValues<T, D, E> extends DualValuesPartial<T, D>, Values<T, E> {}

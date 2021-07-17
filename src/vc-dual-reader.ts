@@ -1,6 +1,5 @@
 import { VCReader, ValuesPartial, VCReaderParams, Values } from './vc-reader';
 import { ConfigurationScope } from 'vscode';
-import { NoEffectiveValueError } from './errors';
 
 /**
  * Configuration reader that reads and validates values from a new and deprecated configuration.
@@ -97,7 +96,7 @@ export class VCDualReader<T, D, E> {
      *              a multi-root workspace. However, the exact way the default scope is determined 
      *              is not really made clear by vscode's API.
      * 
-     * @throws `NoEffectiveValueError` if an effective value cannot be calculated. 
+     * @throws `Error` if an effective value cannot be calculated. 
      */
     public read(scope?: ConfigurationScope): DualValues<T, D, E> {
         const values = this._read(scope);
@@ -137,7 +136,7 @@ export class VCDualReader<T, D, E> {
         } else if (values.deprDefaultValue !== undefined) {
             effectiveValue = this.args.deprTransform(values.deprDefaultValue);
         } else {
-            throw new NoEffectiveValueError(`No effective value between ${this.args.name} and ${this.args.deprName}.`);
+            throw new Error(`No effective value between ${this.args.name} and ${this.args.deprName}.`);
         }
 
         return { ...values, effectiveValue };

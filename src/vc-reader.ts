@@ -1,5 +1,4 @@
 import { workspace, ConfigurationScope } from 'vscode';
-import { ConfigurationNameEmptyError, NoEffectiveValueError } from './errors';
 
 /** 
  * Configuration reader that validates values before yielding them.
@@ -41,11 +40,11 @@ export class VCReader<T, E> {
     /** 
      * Register a validating reader that reads configuration values.
      * 
-     * @throws `ConfigurationNameEmptyError` if `name` is empty.
+     * @throws `Error` if `name` is empty.
      */
     public constructor(private readonly args: VCReaderParams<T, E>) {
         if (args.name.trim().length === 0) {
-            throw new ConfigurationNameEmptyError(`Name cannot be empty!`);
+            throw new Error(`Name cannot be empty!`);
         }
         const { section, child } = splitName(args.name);
         this.section = section;
@@ -87,7 +86,7 @@ export class VCReader<T, E> {
      *              a multi-root workspace. However, the exact way the default scope is determined 
      *              is not really made clear by vscode's API.
      * 
-     * @throws `NoEffectiveValueError` if an effective value cannot be calcualted. 
+     * @throws `Error` if an effective value cannot be calculated. 
      */
     public read(scope?: ConfigurationScope): Values<T, E> {
         const values = this._read(scope);
@@ -111,7 +110,7 @@ export class VCReader<T, E> {
         } else if (values.defaultValue !== undefined) {
             effectiveValue = this.args.transform(values.defaultValue);
         } else {
-            throw new NoEffectiveValueError(`No effective value for ${this.name}.`);
+            throw new Error(`No effective value for ${this.name}.`);
         }
 
         return { ...values, effectiveValue };

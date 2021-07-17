@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.10.0
+
+Upgrade to ES2020 and exclude source maps from release package.
+
 ## 0.9.0
 
 Un-expose the `validate` and `transform` properties passed to the constructors 

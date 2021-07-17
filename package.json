@@ -19,7 +19,8 @@
     "main": "./out/index.js",
     "files": [
         "out/*.js",
-        "out/types/*.d.ts"
+        "out/types/*.d.ts",
+        "CHANGELOG.md"
     ],
     "types": "./out/types/index.d.ts",
     "activationEvents": [],

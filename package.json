@@ -19,7 +19,6 @@
     "main": "./out/index.js",
     "files": [
         "out/*.js",
-        "out/*.js.map",
         "out/types/*.d.ts"
     ],
     "types": "./out/types/index.d.ts",

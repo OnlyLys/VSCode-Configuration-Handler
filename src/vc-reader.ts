@@ -1,4 +1,5 @@
 import { workspace, ConfigurationScope } from 'vscode';
+import { Inspect } from './inspect';
 
 /** 
  * Configuration reader that validates values before yielding them.
@@ -52,26 +53,80 @@ export class VCReader<T, E> {
     }
 
     /** 
-     * Get the following validated configuration values:
+     * Get the effective validated value of the configuration.
      * 
-     * 1. Default                         (`defaultValue`)
-     * 2. Global                          (`globalValue`)
-     * 3. Workspace                       (`workspaceValue`) 
-     * 4. Workspace Folder                (`workspaceFolderValue`)
-     * 5. Language Based Default          (`defaultLanguageValue`) 
-     * 6. Language Based Global           (`globalLanguageValue`) 
-     * 7. Language Based Workspace        (`workspaceLanguageValue`)
-     * 8. Language Based Workspace Folder (`workspaceFolderLanguageValue`)
+     * The effective value is determined by taking the following list of values returned by the 
+     * `inspect` method:
      * 
-     * The meaning of each value is explained [here]. The configuration values are validated with
-     * the `validate` callback specified in the constructor. Values which fail validation or are not 
-     * defined are returned as `undefined`.
+     *   - `defaultValue`
+     *   - `globalValue`
+     *   - `workspaceValue`
+     *   - `workspaceFolderValue`
+     *   - `defaultLanguageValue`
+     *   - `globalLanguageValue`
+     *   - `workspaceLanguageValue`
+     *   - `workspaceFolderLanguageValue`
      * 
-     * Along with the various configuration values listed above, the `effectiveValue` is also 
-     * returned. The effective value is the lowest value in the list above that is defined and valid. 
-     * The effective value is transformed by the `transform` callback provided in the constructor
-     * before it is returned, and it is guaranteed to be a defined value, otherwise this method will 
-     * throw an error.
+     * and finding the last value in the list (i.e. first from the bottom) that is not `undefined`.
+     * 
+     * Before it is returned, the effective value is transformed with the `transform` callback 
+     * specified in the constructor of this class. 
+     * 
+     * @param scope This parameter determines from which perspective the configuration is read from.
+     *              For instance, in a multi-root workspace, providing a `scope` argument to a
+     *              workspace X will cause this method to return configuration values relative to 
+     *              workspace X only.
+     * 
+     *              If no `scope` value is provided, the default scope will be used, which is usually 
+     *              the active text editor. When there is no active text editor, the default scope 
+     *              will be the workspace in a single workspace environment or the root workspace in 
+     *              a multi-root workspace. However, the exact way the default scope is determined 
+     *              is not really made clear by vscode's API.
+     * 
+     * @throws `Error` if an effective value cannot be obtained. 
+     */
+    public read(scope?: ConfigurationScope): E {
+        let effectiveValue: E;
+        const inspect   = this.inspect(scope);
+        const transform = this.args.transform;
+        if (inspect.workspaceFolderLanguageValue !== undefined) {
+            effectiveValue = transform(inspect.workspaceFolderLanguageValue);
+        } else if (inspect.workspaceLanguageValue !== undefined) {
+            effectiveValue = transform(inspect.workspaceLanguageValue);
+        } else if (inspect.globalLanguageValue !== undefined) {
+            effectiveValue = transform(inspect.globalLanguageValue);
+        } else if (inspect.defaultLanguageValue !== undefined) {
+            effectiveValue = transform(inspect.defaultLanguageValue);
+        } else if (inspect.workspaceFolderValue !== undefined) {
+            effectiveValue = transform(inspect.workspaceFolderValue);
+        } else if (inspect.workspaceValue !== undefined) {
+            effectiveValue = transform(inspect.workspaceValue);
+        } else if (inspect.globalValue !== undefined) {
+            effectiveValue = transform(inspect.globalValue);
+        } else if (inspect.defaultValue !== undefined) {
+            effectiveValue = transform(inspect.defaultValue);
+        } else {
+            throw new Error(`No effective value for ${this.name}.`);
+        }
+
+        return effectiveValue;
+    }
+
+    /** 
+     * Get the validated values of the configuration in the following scopes:
+     * 
+     *   - Default                            (`defaultValue`)
+     *   - Global                             (`globalValue`)
+     *   - Workspace                          (`workspaceValue`) 
+     *   - Workspace Folder                   (`workspaceFolderValue`)
+     *   - Language Specific Default          (`defaultLanguageValue`) 
+     *   - Language Specific Global           (`globalLanguageValue`) 
+     *   - Language Specific Workspace        (`workspaceLanguageValue`)
+     *   - Language Specific Workspace Folder (`workspaceFolderLanguageValue`)
+     * 
+     * The meaning of each value is explained [here]. Each configuration value is validated with
+     * the `validate` callback specified in the constructor of this class. Values which fail 
+     * validation or are not defined are returned as `undefined`.
      * 
      * [here]: https://code.visualstudio.com/api/references/vscode-api#WorkspaceConfiguration
      * 
@@ -85,67 +140,26 @@ export class VCReader<T, E> {
      *              will be the workspace in a single workspace environment or the root workspace in 
      *              a multi-root workspace. However, the exact way the default scope is determined 
      *              is not really made clear by vscode's API.
-     * 
-     * @throws `Error` if an effective value cannot be calculated. 
      */
-    public read(scope?: ConfigurationScope): Values<T, E> {
-        const values = this._read(scope);
-
-        // Calculate the effective value and scope by applying shadowing rules.
-        let effectiveValue: E;
-        if (values.workspaceFolderLanguageValue !== undefined) {
-            effectiveValue = this.args.transform(values.workspaceFolderLanguageValue);
-        } else if (values.workspaceLanguageValue !== undefined) {
-            effectiveValue = this.args.transform(values.workspaceLanguageValue);
-        } else if (values.globalLanguageValue !== undefined) {
-            effectiveValue = this.args.transform(values.globalLanguageValue);
-        } else if (values.defaultLanguageValue !== undefined) {
-            effectiveValue = this.args.transform(values.defaultLanguageValue);
-        } else if (values.workspaceFolderValue !== undefined) {
-            effectiveValue = this.args.transform(values.workspaceFolderValue);
-        } else if (values.workspaceValue !== undefined) {
-            effectiveValue = this.args.transform(values.workspaceValue);
-        } else if (values.globalValue !== undefined) {
-            effectiveValue = this.args.transform(values.globalValue);
-        } else if (values.defaultValue !== undefined) {
-            effectiveValue = this.args.transform(values.defaultValue);
-        } else {
-            throw new Error(`No effective value for ${this.name}.`);
-        }
-
-        return { ...values, effectiveValue };
-    }
-
-    /** @internal */
-    public _read(scope: ConfigurationScope | undefined): ValuesPartial<T> {
+    public inspect(scope?: ConfigurationScope): Inspect<T> {
         const inspect = workspace.getConfiguration(this.section, scope).inspect<unknown>(this.child);
 
         // I have yet to encounter circumstances that cause `inspect` to be `undefined`. But better
-        // to be safe than sorry and do this check.
+        // to be safe and do this check.
         if (!inspect) {
             throw new Error(`Unexpected error: Inspecting ${this.name} yields 'undefined'.`);
         }
 
-        // Validate the configuration values in every scope.
         const validate = (value: unknown) => this.args.validate(value) ? value : undefined;
-        const defaultValue                 = validate(inspect.defaultValue);
-        const globalValue                  = validate(inspect.globalValue);
-        const workspaceValue               = validate(inspect.workspaceValue);
-        const workspaceFolderValue         = validate(inspect.workspaceFolderValue);
-        const defaultLanguageValue         = validate(inspect.defaultLanguageValue);
-        const globalLanguageValue          = validate(inspect.globalLanguageValue);
-        const workspaceLanguageValue       = validate(inspect.workspaceLanguageValue);
-        const workspaceFolderLanguageValue = validate(inspect.workspaceFolderLanguageValue);
-        
         return {
-            defaultValue,
-            globalValue,
-            workspaceValue,
-            workspaceFolderValue,
-            defaultLanguageValue,
-            globalLanguageValue,
-            workspaceLanguageValue,
-            workspaceFolderLanguageValue
+            defaultValue:                 validate(inspect.defaultValue),
+            globalValue:                  validate(inspect.globalValue),
+            workspaceValue:               validate(inspect.workspaceValue),
+            workspaceFolderValue:         validate(inspect.workspaceFolderValue),
+            defaultLanguageValue:         validate(inspect.defaultLanguageValue),
+            globalLanguageValue:          validate(inspect.globalLanguageValue),
+            workspaceLanguageValue:       validate(inspect.workspaceLanguageValue),
+            workspaceFolderLanguageValue: validate(inspect.workspaceFolderLanguageValue)
         };
     }
 
@@ -169,65 +183,6 @@ export interface VCReaderParams<T, E>  {
     readonly transform: (t: T) => E;
     
 };
-
-/**
- * The validated values of the configuration.
- */
-export interface ValuesPartial<T> {
-
-    /** 
-     * The validated default value of the configuration. 
-     */
-    defaultValue: T | undefined;
-
-    /** 
-     * The validated global value of the configuration.
-     */
-    globalValue: T | undefined;
-
-    /**
-     * The validated workspace value of the configuration.
-     */
-    workspaceValue: T | undefined;
-
-    /**
-     * The validated workspace folder value of the configuration.
-     */
-    workspaceFolderValue: T | undefined;
-
-    /** 
-     * The validated language specific default value of the configuration.
-     */
-    defaultLanguageValue: T | undefined;
-
-    /**
-     * The validated language specific global value of the configuration.
-     */
-    globalLanguageValue: T | undefined;
-
-    /**
-     * The validated language specific workspace value of the configuration.
-     */
-    workspaceLanguageValue: T | undefined;
-
-    /**
-     * The validated language specific workspace folder value of the configuration.
-     */
-    workspaceFolderLanguageValue: T | undefined;
-
-}
-
-/**
- * The validated values of the configuration along with the transformed effective value.
- */
-export interface Values<T, E> extends ValuesPartial<T> {
-
-    /**
-     * The transformed effective value.
-     */
-    effectiveValue: E;
-
-}
 
 /**
  * Split a full configuration name into a [section name] and a child name. 

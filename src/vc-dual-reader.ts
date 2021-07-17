@@ -1,5 +1,7 @@
-import { VCReader, ValuesPartial, VCReaderParams, Values } from './vc-reader';
+import { VCReader, VCReaderParams } from './vc-reader';
 import { ConfigurationScope } from 'vscode';
+import { Inspect } from './inspect';
+
 
 /**
  * Configuration reader that reads and validates values from a new and deprecated configuration.
@@ -41,7 +43,7 @@ export class VCDualReader<T, D, E> {
      * @throws `ConfigurationNameEmptyError` if either `name` or `deprName` is empty.
      */
     public constructor(private readonly args: VCDualReaderParams<T, D, E>) {
-        this.newReader  = new VCReader({ ...args });
+        this.newReader  = new VCReader(args);
         this.deprReader = new VCReader({
             name:      args.deprName,
             validate:  args.deprValidate,
@@ -50,38 +52,33 @@ export class VCDualReader<T, D, E> {
     }
 
     /** 
-     * Get the following validated configuration values for the new and deprecated configurations:
+     * Get the effective validated value between the new and deprecated configurations.
      * 
-     *   1.  Default of Deprecated                            (`deprDefaultValue`)
-     *   2.  Default                                          (`defaultValue`)
-     *   3.  Global of Deprecated                             (`deprGlobalValue`)
-     *   4.  Global                                           (`globalValue`)
-     *   5.  Workspace of Deprecated                          (`deprWorkspaceValue`) 
-     *   6.  Workspace                                        (`workspaceValue`) 
-     *   7.  Workspace Folder of Deprecated                   (`deprWorkspaceFolderValue`)
-     *   8.  Workspace Folder                                 (`workspaceFolderValue`)
-     *   9.  Language Specific Default of Deprecated          (`deprDefaultLanguageValue`)
-     *   10. Language Specific Default                        (`defaultLanguageValue`)
-     *   11. Language Specific Global of Deprecated           (`deprGlobalLanguageValue`) 
-     *   12. Language Specific Global                         (`globalLanguageValue`) 
-     *   13. Language Specific Workspace of Deprecated        (`deprWorkspaceLanguageValue`)
-     *   14. Language Specific Workspace                      (`workspaceLanguageValue`)
-     *   15. Language Specific Workspace Folder of Deprecated (`deprWorkspaceFolderLanguageValue`)
-     *   16. Language Specific Workspace Folder               (`workspaceFolderLanguageValue`)
+     * The effective value is determined by taking the following list of values returned by the
+     * `inspect` and `deprInspect` methods:
      * 
-     * The meaning of each value is explained [here]. Values whose names are suffixed with 'of 
-     * Deprecated' are configuration values of the deprecated configuration. The configuration values 
-     * of the new and deprecated configurations are respectively validated with the `validate` and 
-     * `deprValidate` callbacks specified in the constructor. Values which fail validation or are 
-     * not defined are returned as `undefined`.
+     *   - `defaultValue`                 from `deprInspect`
+     *   - `defaultValue`                 from `inspect`
+     *   - `globalValue`                  from `deprInspect`
+     *   - `globalValue`                  from `inspect`
+     *   - `workspaceValue`               from `deprInspect`
+     *   - `workspaceValue`               from `inspect`
+     *   - `workspaceFolderValue`         from `deprInspect`
+     *   - `workspaceFolderValue`         from `inspect`
+     *   - `defaultLanguageValue`         from `deprInspect`
+     *   - `defaultLanguageValue`         from `inspect`
+     *   - `globalLanguageValue`          from `deprInspect`
+     *   - `globalLanguageValue`          from `inspect`
+     *   - `workspaceLanguageValue`       from `deprInspect`
+     *   - `workspaceLanguageValue`       from `inspect`
+     *   - `workspaceFolderLanguageValue` from `deprInspect`
+     *   - `workspaceFolderLanguageValue` from `inspect`
      * 
-     * Along with the various configuration values listed above, the `effectiveValue` is also 
-     * returned. The effective value is the lowest value in the list above that is defined and valid. 
-     * If the effective value is from the new configuration, it will be transformed with the `transform`
-     * callback provided in the constructor before being returned. On the other hand, if the effective 
-     * value is from the deprecated configuration, it will be transformed with `deprTransform` before
-     * being returned. The effective value is guaranteed to be defined, otherwise this method will 
-     * throw an error.
+     * and finding the last value in the list (i.e. first from the bottom) that is not `undefined`.
+     * 
+     * Before it is returned, the effective value is transformed with either the `transform` or
+     * `deprTransform` callback specified in the constructor of this class, depending on whether the
+     * effective value comes from the new or deprecated configuration. 
      * 
      * [here]: https://code.visualstudio.com/api/references/vscode-api#WorkspaceConfiguration
      * 
@@ -96,67 +93,117 @@ export class VCDualReader<T, D, E> {
      *              a multi-root workspace. However, the exact way the default scope is determined 
      *              is not really made clear by vscode's API.
      * 
-     * @throws `Error` if an effective value cannot be calculated. 
+     * @throws `Error` if an effective value cannot be obtained. 
      */
-    public read(scope?: ConfigurationScope): DualValues<T, D, E> {
-        const values = this._read(scope);
-
-        // Calculate the effective value and scope by applying shadowing rules.
+    public read(scope?: ConfigurationScope): E {
+        const newInspect    = this.newReader.inspect(scope);
+        const deprInspect   = this.deprReader.inspect(scope);
+        const newTransform  = this.args.transform;
+        const deprTransform = this.args.deprTransform;
         let effectiveValue: E;
-        if (values.workspaceFolderLanguageValue !== undefined) {
-            effectiveValue = this.args.transform(values.workspaceFolderLanguageValue);
-        } else if (values.deprWorkspaceFolderLanguageValue !== undefined) {
-            effectiveValue = this.args.deprTransform(values.deprWorkspaceFolderLanguageValue);
-        } else if (values.workspaceLanguageValue !== undefined) {
-            effectiveValue = this.args.transform(values.workspaceLanguageValue);
-        } else if (values.deprWorkspaceLanguageValue !== undefined) {
-            effectiveValue = this.args.deprTransform(values.deprWorkspaceLanguageValue);
-        } else if (values.globalLanguageValue !== undefined) {
-            effectiveValue = this.args.transform(values.globalLanguageValue);
-        } else if (values.deprGlobalLanguageValue !== undefined) {
-            effectiveValue = this.args.deprTransform(values.deprGlobalLanguageValue);
-        } else if (values.defaultLanguageValue !== undefined) {
-            effectiveValue = this.args.transform(values.defaultLanguageValue);
-        } else if (values.deprDefaultLanguageValue !== undefined) {
-            effectiveValue = this.args.deprTransform(values.deprDefaultLanguageValue);
-        } else if (values.workspaceFolderValue !== undefined) {
-            effectiveValue = this.args.transform(values.workspaceFolderValue);
-        } else if (values.deprWorkspaceFolderValue !== undefined) {
-            effectiveValue = this.args.deprTransform(values.deprWorkspaceFolderValue);
-        } else if (values.workspaceValue !== undefined) {
-            effectiveValue = this.args.transform(values.workspaceValue);
-        } else if (values.deprWorkspaceValue !== undefined) {
-            effectiveValue = this.args.deprTransform(values.deprWorkspaceValue);
-        } else if (values.globalValue !== undefined) {
-            effectiveValue = this.args.transform(values.globalValue);
-        } else if (values.deprGlobalValue !== undefined) {
-            effectiveValue = this.args.deprTransform(values.deprGlobalValue);
-        } else if (values.defaultValue !== undefined) {
-            effectiveValue = this.args.transform(values.defaultValue);
-        } else if (values.deprDefaultValue !== undefined) {
-            effectiveValue = this.args.deprTransform(values.deprDefaultValue);
+        if (newInspect.workspaceFolderLanguageValue !== undefined) {
+            effectiveValue = newTransform(newInspect.workspaceFolderLanguageValue);
+        } else if (deprInspect.workspaceFolderLanguageValue !== undefined) {
+            effectiveValue = deprTransform(deprInspect.workspaceFolderLanguageValue);
+        } else if (newInspect.workspaceLanguageValue !== undefined) {
+            effectiveValue = newTransform(newInspect.workspaceLanguageValue);
+        } else if (deprInspect.workspaceLanguageValue !== undefined) {
+            effectiveValue = deprTransform(deprInspect.workspaceLanguageValue);
+        } else if (newInspect.globalLanguageValue !== undefined) {
+            effectiveValue = newTransform(newInspect.globalLanguageValue);
+        } else if (deprInspect.globalLanguageValue !== undefined) {
+            effectiveValue = deprTransform(deprInspect.globalLanguageValue);
+        } else if (newInspect.defaultLanguageValue !== undefined) {
+            effectiveValue = newTransform(newInspect.defaultLanguageValue);
+        } else if (deprInspect.defaultLanguageValue !== undefined) {
+            effectiveValue = deprTransform(deprInspect.defaultLanguageValue);
+        } else if (newInspect.workspaceFolderValue !== undefined) {
+            effectiveValue = newTransform(newInspect.workspaceFolderValue);
+        } else if (deprInspect.workspaceFolderValue !== undefined) {
+            effectiveValue = deprTransform(deprInspect.workspaceFolderValue);
+        } else if (newInspect.workspaceValue !== undefined) {
+            effectiveValue = newTransform(newInspect.workspaceValue);
+        } else if (deprInspect.workspaceValue !== undefined) {
+            effectiveValue = deprTransform(deprInspect.workspaceValue);
+        } else if (newInspect.globalValue !== undefined) {
+            effectiveValue = newTransform(newInspect.globalValue);
+        } else if (deprInspect.globalValue !== undefined) {
+            effectiveValue = deprTransform(deprInspect.globalValue);
+        } else if (newInspect.defaultValue !== undefined) {
+            effectiveValue = newTransform(newInspect.defaultValue);
+        } else if (deprInspect.defaultValue !== undefined) {
+            effectiveValue = deprTransform(deprInspect.defaultValue);
         } else {
             throw new Error(`No effective value between ${this.args.name} and ${this.args.deprName}.`);
         }
 
-        return { ...values, effectiveValue };
+        return effectiveValue;
     }
 
-    /** @internal */
-    public _read(scope: ConfigurationScope | undefined): DualValuesPartial<T, D> {
-        const newValues  = this.newReader._read(scope);
-        const deprValues = this.deprReader._read(scope);
-        return {
-            ...newValues,
-            deprDefaultValue:                 deprValues.defaultValue,
-            deprGlobalValue:                  deprValues.globalValue,
-            deprWorkspaceValue:               deprValues.workspaceValue,
-            deprWorkspaceFolderValue:         deprValues.workspaceFolderValue,
-            deprDefaultLanguageValue:         deprValues.defaultLanguageValue,
-            deprGlobalLanguageValue:          deprValues.globalLanguageValue,
-            deprWorkspaceLanguageValue:       deprValues.workspaceLanguageValue,
-            deprWorkspaceFolderLanguageValue: deprValues.workspaceFolderLanguageValue,
-        };
+    /** 
+     * Get the validated values of the new configuration in the following scopes:
+     * 
+     *   - Default                            (`defaultValue`)
+     *   - Global                             (`globalValue`)
+     *   - Workspace                          (`workspaceValue`) 
+     *   - Workspace Folder                   (`workspaceFolderValue`)
+     *   - Language Specific Default          (`defaultLanguageValue`) 
+     *   - Language Specific Global           (`globalLanguageValue`) 
+     *   - Language Specific Workspace        (`workspaceLanguageValue`)
+     *   - Language Specific Workspace Folder (`workspaceFolderLanguageValue`)
+     * 
+     * The meaning of each value is explained [here]. Each configuration value is validated with
+     * the `validate` callback specified in the constructor of this class. Values which fail 
+     * validation or are not defined are returned as `undefined`.
+     * 
+     * [here]: https://code.visualstudio.com/api/references/vscode-api#WorkspaceConfiguration
+     * 
+     * @param scope This parameter determines from which perspective the configuration is read from.
+     *              For instance, in a multi-root workspace, providing a `scope` argument to a
+     *              workspace X will cause this method to return configuration values relative to 
+     *              workspace X only.
+     * 
+     *              If no `scope` value is provided, the default scope will be used, which is usually 
+     *              the active text editor. When there is no active text editor, the default scope 
+     *              will be the workspace in a single workspace environment or the root workspace in 
+     *              a multi-root workspace. However, the exact way the default scope is determined 
+     *              is not really made clear by vscode's API.
+     */
+    public inspect(scope?: ConfigurationScope): Inspect<T> {
+        return this.newReader.inspect(scope);
+    }
+
+    /** 
+     * Get the validated values of the deprecated configuration in the following scopes:
+     * 
+     *   - Default                            (`defaultValue`)
+     *   - Global                             (`globalValue`)
+     *   - Workspace                          (`workspaceValue`) 
+     *   - Workspace Folder                   (`workspaceFolderValue`)
+     *   - Language Specific Default          (`defaultLanguageValue`) 
+     *   - Language Specific Global           (`globalLanguageValue`) 
+     *   - Language Specific Workspace        (`workspaceLanguageValue`)
+     *   - Language Specific Workspace Folder (`workspaceFolderLanguageValue`)
+     * 
+     * The meaning of each value is explained [here]. Each configuration value is validated with
+     * the `deprValidate` callback specified in the constructor of this class. Values which fail 
+     * validation or are not defined are returned as `undefined`.
+     * 
+     * [here]: https://code.visualstudio.com/api/references/vscode-api#WorkspaceConfiguration
+     * 
+     * @param scope This parameter determines from which perspective the configuration is read from.
+     *              For instance, in a multi-root workspace, providing a `scope` argument to a
+     *              workspace X will cause this method to return configuration values relative to 
+     *              workspace X only.
+     * 
+     *              If no `scope` value is provided, the default scope will be used, which is usually 
+     *              the active text editor. When there is no active text editor, the default scope 
+     *              will be the workspace in a single workspace environment or the root workspace in 
+     *              a multi-root workspace. However, the exact way the default scope is determined 
+     *              is not really made clear by vscode's API.
+     */
+    public deprInspect(scope?: ConfigurationScope): Inspect<D> {
+        return this.deprReader.inspect(scope);
     }
 
 } 
@@ -180,96 +227,3 @@ export interface VCDualReaderParams<T, D, E> extends VCReaderParams<T, E> {
     readonly deprTransform: (d: D) => E;
     
 }
-
-/**
- * The validated values of both the new and deprecated configurations.
- */
-export interface DualValuesPartial<T, D> extends ValuesPartial<T> {
-
-    /** 
-     * The validated default value of the new configuration. 
-     */
-    defaultValue: T | undefined;
-
-    /** 
-     * The validated global value of the new configuration.
-     */
-    globalValue: T | undefined;
-
-    /**
-     * The validated workspace value of the new configuration.
-     */
-    workspaceValue: T | undefined;
-
-    /**
-     * The validated workspace folder value of the new configuration.
-     */
-    workspaceFolderValue: T | undefined;
-
-    /** 
-     * The validated language specific default value of the new configuration.
-     */
-    defaultLanguageValue: T | undefined;
-
-    /**
-     * The validated language specific global value of the new configuration.
-     */
-    globalLanguageValue: T | undefined;
-
-    /**
-     * The validated language specific workspace value of the new configuration.
-     */
-    workspaceLanguageValue: T | undefined;
-
-    /**
-     * The validated language specific workspace folder value of the new configuration.
-     */
-    workspaceFolderLanguageValue: T | undefined;
-
-    /**
-     * The validated default value of the deprecated configuration.
-     */
-    deprDefaultValue: D | undefined;
-
-    /** 
-     * The validated global value of the deprecated configuration.
-     */
-    deprGlobalValue: D | undefined;
-
-    /**
-     * The validated workspace value of the deprecated configuration.
-     */
-    deprWorkspaceValue: D | undefined;
-
-    /**
-     * The validated workspace folder value of the deprecated configuration.
-     */
-    deprWorkspaceFolderValue: D | undefined;
-    
-    /**
-     * The validated language specific default value of the deprecated configuration.
-     */
-    deprDefaultLanguageValue: D | undefined;
-
-    /**
-     * The validated language specific global value of the deprecated configuration.
-     */
-    deprGlobalLanguageValue: D | undefined;
-
-    /**
-     * The validated language specific workspace value of the deprecated configuration.
-     */
-    deprWorkspaceLanguageValue: D | undefined;
-
-    /**
-     * The validated language specific workspace folder value of the deprecated configuration.
-     */
-    deprWorkspaceFolderLanguageValue: D | undefined;
-
-}
-
-/**
- * The validated values of both the new and deprecated configurations along with the transformed
- * effective value.
- */
-export interface DualValues<T, D, E> extends DualValuesPartial<T, D>, Values<T, E> {}

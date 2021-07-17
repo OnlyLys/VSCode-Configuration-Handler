@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.11.0
+
+Make `VCReader` and `VCDualReader` more efficient by having `read` return only
+the effective value. A new `inspect` method is available to get values from the 
+other scopes.
+
 ## 0.10.0
 
 Upgrade to ES2020 and exclude source maps from release package.

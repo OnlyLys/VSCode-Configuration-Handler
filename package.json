@@ -133,7 +133,7 @@
         "compile": "tsc -p ./",
         "lint": "eslint src --ext ts",
         "prepare": "npm run compile && npm run lint",
-        "pretest": "npm run compile && npm run lint",
+        "pretest": "npm run compile && npm run lint && node ./out/node-scripts/generate-test-environment.js",
         "test": "node ./out/test/run-test.js"
     },
     "engines": {
